@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}Add{% endif %} Section - EduCore SMS{% endblock %}
+{% block page_title %}{% if form.instance.pk %}Edit Section{% else %}Add New Section{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Class <span class="text-danger">*</span></label>
+                            {{ form.school_class }}
+                            {% if form.school_class.errors %}
+                                <div class="text-danger small">{{ form.school_class.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Section Name <span class="text-danger">*</span></label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="text-danger small">{{ form.name.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">e.g. A, B, C, Blue, Red</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Homeroom Teacher</label>
+                            {{ form.section_teacher }}
+                            {% if form.section_teacher.errors %}
+                                <div class="text-danger small">{{ form.section_teacher.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Room Number</label>
+                            {{ form.room_number }}
+                            {% if form.room_number.errors %}
+                                <div class="text-danger small">{{ form.room_number.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Max Capacity <span class="text-danger">*</span></label>
+                            {{ form.max_capacity }}
+                            {% if form.max_capacity.errors %}
+                                <div class="text-danger small">{{ form.max_capacity.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="form-check">
+                                {{ form.is_active }}
+                                <label class="form-check-label">Active</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'class_list' %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            {% if form.instance.pk %}Update Section{% else %}Create Section{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

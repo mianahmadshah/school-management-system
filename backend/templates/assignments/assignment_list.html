@@ -1,0 +1,61 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Assignments - EduCore SMS{% endblock %}
+{% block page_title %}Assignments{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div><p class="text-muted mb-0">Manage assignments and homework</p></div>
+    {% if user.role != 'STUDENT' %}
+    <a href="{% url 'assignment_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> New Assignment</a>
+    {% endif %}
+</div>
+{% if user.is_student %}
+<div class="alert alert-info"><i class="bi bi-info-circle"></i> Showing assignments for your class. Check your dashboard for due dates.</div>
+{% endif %}
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <select name="class_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Classes</option>
+                    {% for c in classes %}<option value="{{ c.pk }}" {% if request.GET.class_id == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select name="subject_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Subjects</option>
+                    {% for s in subjects %}<option value="{{ s.pk }}" {% if request.GET.subject_id == s.pk|stringformat:"s" %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table data-table table-hover mb-0">
+                <thead><tr><th>Title</th><th>Class</th><th>Subject</th><th>Due Date</th><th>Status</th>{% if user.role != 'STUDENT' %}<th class="text-end">Actions</th>{% endif %}</tr></thead>
+                <tbody>
+                    {% for a in assignments %}
+                    <tr>
+                        <td class="fw-semibold">{{ a.title }}</td>
+                        <td>{{ a.school_class.name }} - {{ a.section.name }}</td>
+                        <td>{{ a.subject.name }}</td>
+                        <td>{{ a.due_date|date:"d M Y H:i" }}</td>
+                        <td>{% if a.is_overdue %}<span class="badge bg-danger">Overdue</span>{% else %}<span class="badge bg-success">Active</span>{% endif %}</td>
+                        {% if user.role != 'STUDENT' %}
+                        <td class="text-end">
+                            <a href="{% url 'assignment_detail' a.pk %}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
+                            <a href="{% url 'assignment_update' a.pk %}" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'assignment_delete' a.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="{% if user.role != 'STUDENT' %}6{% else %}5{% endif %}" class="text-center py-5"><p class="text-muted mb-2">No assignments found.</p>{% if user.role != 'STUDENT' %}<a href="{% url 'assignment_create' %}" class="btn btn-primary">Create First Assignment</a>{% endif %}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

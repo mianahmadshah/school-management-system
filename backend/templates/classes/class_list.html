@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Classes - EduCore SMS{% endblock %}
+{% block page_title %}Class Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Class Management</h2>
+        <p class="page-header-subtitle">Manage all academic classes and sections</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'section_create' %}" class="btn btn-outline-primary">
+            <i class="bi bi-plus-circle"></i> Add Section
+        </a>
+        <a href="{% url 'class_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add Class
+        </a>
+    </div>
+</div>
+
+<!-- Search & Filter -->
+<div class="filter-bar">
+    <form method="GET" class="row g-3">
+        <div class="col-md-6">
+            <div class="input-icon-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" class="form-control" placeholder="Search classes..." value="{{ request.GET.q }}">
+            </div>
+        </div>
+        <div class="col-md-6 d-flex gap-2">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Search</button>
+            {% if request.GET.q %}
+                <a href="{% url 'class_list' %}" class="btn btn-outline-secondary">Clear</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Classes Table -->
+<div class="table-container">
+    <div class="table-header">
+        <div class="table-header-left">
+            <h5 class="table-title">All Classes</h5>
+            <span class="table-subtitle">{{ classes|length }} total</span>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Class Name</th>
+                    <th>Grade Level</th>
+                    <th>Sections</th>
+                    <th>Class Teacher</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for class_obj in classes %}
+                <tr>
+                    <td>
+                        <a href="{% url 'class_detail' class_obj.pk %}" class="text-decoration-none fw-semibold" style="color: var(--color-primary);">
+                            {{ class_obj.name }}
+                        </a>
+                    </td>
+                    <td>
+                        {% if class_obj.numeric_grade %}
+                            Grade {{ class_obj.numeric_grade }}
+                        {% else %}
+                            <span style="color: var(--color-text-tertiary);">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-info">{{ class_obj.sections.count }} section{{ class_obj.sections.count|pluralize }}</span>
+                    </td>
+                    <td>
+                        {% if class_obj.class_teacher %}
+                            {{ class_obj.class_teacher.full_name }}
+                        {% else %}
+                            <span style="color: var(--color-text-tertiary);">Not assigned</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if class_obj.is_active %}
+                            <span class="badge-status badge-status-active">Active</span>
+                        {% else %}
+                            <span class="badge-status badge-status-inactive">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="table-cell-actions">
+                            <a href="{% url 'class_detail' class_obj.pk %}" class="btn btn-icon btn-sm btn-ghost" title="View"><i class="bi bi-eye"></i></a>
+                            <a href="{% url 'class_update' class_obj.pk %}" class="btn btn-icon btn-sm btn-ghost" title="Edit"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'class_delete' class_obj.pk %}" class="btn btn-icon btn-sm btn-ghost text-danger" title="Delete"><i class="bi bi-trash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <div class="table-empty">
+                            <div class="table-empty-icon"><i class="bi bi-building"></i></div>
+                            <p class="table-empty-text">No classes found</p>
+                            <p class="table-empty-subtext">Get started by adding your first class.</p>
+                            <a href="{% url 'class_create' %}" class="btn btn-primary btn-sm">Add First Class</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if is_paginated %}
+    <div class="table-footer">
+        <div class="table-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+        <div class="table-actions">
+            <nav><ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"><i class="bi bi-chevron-left"></i></a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"><i class="bi bi-chevron-right"></i></a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a></li>
+                {% endif %}
+            </ul></nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

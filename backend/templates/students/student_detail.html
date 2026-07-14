@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ student.full_name }} Profile - EduCore SMS{% endblock %}
+{% block page_title %}Student Details{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'student_list' %}" class="btn btn-light border btn-sm"><i class="bi bi-arrow-left me-1"></i> Back to Student Directory</a>
+</div>
+
+<div class="row">
+    <!-- Left Column - Profile Picture & Overview -->
+    <div class="col-lg-4 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="position-relative mb-4">
+                    {% if student.photo %}
+                        <img src="{{ student.photo.url }}" alt="Profile Picture" class="rounded-circle border border-primary border-3 img-thumbnail shadow-sm" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center border border-primary border-3 shadow-sm mx-auto" style="width: 150px; height: 150px; font-size: 4rem; font-weight: 700;">
+                            {{ student.user.first_name|slice:":1"|upper }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <h4 class="fw-bold text-dark mb-1">{{ student.full_name }}</h4>
+                <p class="text-muted text-sm mb-3">Admission No: <span class="fw-bold">{{ student.admission_number }}</span></p>
+                
+                <span class="badge {% if student.status == 'ACTIVE' %}badge-success-subtle{% else %}badge-danger-subtle{% endif %} px-3 py-2 rounded-pill fw-semibold mb-4" style="font-size: 0.8rem;">
+                    {{ student.status }}
+                </span>
+
+                <div class="w-100 border-top pt-3 text-start">
+                    <div class="mb-2">
+                        <small class="text-secondary fw-semibold">Class & Section</small>
+                        <p class="m-0 text-dark fw-bold">
+                            {% if student.current_class %}
+                                {{ student.current_class.name }}
+                                {% if student.section %}- {{ student.section.name }}{% endif %}
+                            {% else %}
+                                Not Assigned
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-secondary fw-semibold">Roll Number</small>
+                        <p class="m-0 text-dark">{{ student.roll_number|default:"—" }}</p>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-secondary fw-semibold">Admission Date</small>
+                        <p class="m-0 text-dark">{{ student.admission_date|date:"F d, Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column - Student Info Tabs -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0">
+                <ul class="nav nav-tabs card-header-tabs" id="profileTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active fw-semibold text-secondary" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" aria-controls="personal" aria-selected="true">Personal Info</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link fw-semibold text-secondary" id="parent-tab" data-bs-toggle="tab" data-bs-target="#parent" type="button" role="tab" aria-controls="parent" aria-selected="false">Parents / Guardian</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link fw-semibold text-secondary" id="medical-tab" data-bs-toggle="tab" data-bs-target="#medical" type="button" role="tab" aria-controls="medical" aria-selected="false">Medical Info</button>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="card-body p-4 tab-content" id="profileTabsContent">
+                <!-- Tab: Personal Info -->
+                <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Email Address</small>
+                            <span class="text-dark">{{ student.email }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Phone Number</small>
+                            <span class="text-dark">{{ student.user.phone|default:"—" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Gender</small>
+                            <span class="text-dark text-capitalize">{{ student.gender|lower }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Date of Birth</small>
+                            <span class="text-dark">{{ student.date_of_birth|date:"F d, Y" }} (Age: {{ student.age }})</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Blood Group</small>
+                            <span class="text-dark">{{ student.blood_group|default:"—" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Religion</small>
+                            <span class="text-dark">{{ student.religion|default:"—" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Nationality</small>
+                            <span class="text-dark">{{ student.nationality }}</span>
+                        </div>
+                        <div class="col-12 border-top pt-3">
+                            <small class="text-secondary fw-semibold d-block">Residential Address</small>
+                            <span class="text-dark">{{ student.address }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Parents / Guardian -->
+                <div class="tab-pane fade" id="parent" role="tabpanel" aria-labelledby="parent-tab">
+                    <div class="row g-3">
+                        <!-- Father Info -->
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Father's Name</small>
+                            <span class="text-dark fw-medium">{{ student.father_name|default:"—" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Father's Phone</small>
+                            <span class="text-dark">{{ student.father_phone|default:"—" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Father's Occupation</small>
+                            <span class="text-dark">{{ student.father_occupation|default:"—" }}</span>
+                        </div>
+                        <div class="col-md-6"></div>
+
+                        <!-- Mother Info -->
+                        <div class="col-md-6 border-top pt-3">
+                            <small class="text-secondary fw-semibold d-block">Mother's Name</small>
+                            <span class="text-dark fw-medium">{{ student.mother_name|default:"—" }}</span>
+                        </div>
+                        <div class="col-md-6 border-top pt-3">
+                            <small class="text-secondary fw-semibold d-block">Mother's Phone</small>
+                            <span class="text-dark">{{ student.mother_phone|default:"—" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Mother's Occupation</small>
+                            <span class="text-dark">{{ student.mother_occupation|default:"—" }}</span>
+                        </div>
+                        <div class="col-md-6"></div>
+
+                        <!-- Guardian / Emergency Info -->
+                        {% if student.guardian_name %}
+                            <div class="col-md-6 border-top pt-3">
+                                <small class="text-secondary fw-semibold d-block">Guardian's Name</small>
+                                <span class="text-dark fw-medium">{{ student.guardian_name }}</span>
+                            </div>
+                            <div class="col-md-6 border-top pt-3">
+                                <small class="text-secondary fw-semibold d-block">Guardian's Relation</small>
+                                <span class="text-dark">{{ student.guardian_relation }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-secondary fw-semibold d-block">Guardian's Phone</small>
+                                <span class="text-dark">{{ student.guardian_phone }}</span>
+                            </div>
+                        {% endif %}
+                        <div class="col-md-6 {% if student.guardian_name %}border-top pt-3{% endif %}">
+                            <small class="text-secondary fw-semibold d-block text-danger">Emergency Contact Number</small>
+                            <span class="text-dark fw-bold">{{ student.emergency_contact|default:"—" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Medical Info -->
+                <div class="tab-pane fade" id="medical" role="tabpanel" aria-labelledby="medical-tab">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <small class="text-secondary fw-semibold d-block">Allergies / Special Medical Conditions</small>
+                            <p class="text-dark mt-2 p-3 bg-light rounded-3 border">
+                                {{ student.medical_conditions|default:"No medical conditions reported." }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+/*
+  style.css - Main CSS entry point
+  Premium SaaS Design System
+
+  Imports all CSS modules in order + Bootstrap overrides.
+*/
+
+/* ===== CSS Modules ===== */
+@import url('base.css');
+@import url('layout.css');
+@import url('components.css');
+@import url('forms.css');
+@import url('tables.css');
+@import url('dashboard.css');
+@import url('pages.css');
+@import url('utilities.css');
+@import url('responsive.css');
+@import url('gradients.css');
+
+/* ===== Bootstrap Overrides ===== */
+
+.container { max-width: 1400px; }
+
+.row {
+  --bs-gutter-x: 1.5rem;
+  --bs-gutter-y: 1.5rem;
+}
+
+@media (max-width: 767.98px) {
+  .row {
+    --bs-gutter-x: 1rem;
+    --bs-gutter-y: 1rem;
+  }
+}
+
+.dropdown-toggle::after { margin-left: 0.5rem; vertical-align: middle; }
+
+.modal { z-index: 1055; }
+.modal-backdrop { z-index: 1054; }
+
+.navbar-toggler {
+  border: 1px solid var(--color-border, #E2E8F0);
+  border-radius: var(--radius, 10px);
+  padding: 0.5rem;
+  transition: all var(--transition-fast, 150ms);
+}
+
+.navbar-toggler:hover { background: var(--color-hover, #F1F5F9); }
+
+.btn-close {
+  width: 0.75rem;
+  height: 0.75rem;
+  opacity: 0.5;
+  transition: opacity var(--transition-fast, 150ms);
+  background-size: 0.75rem;
+}
+
+.btn-close:hover { opacity: 1; }
+.btn-close:focus { box-shadow: none; }
+
+/* Table */
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-accent-bg: transparent;
+  --bs-table-striped-color: inherit;
+  --bs-table-striped-bg: var(--color-background, #F8FAFC);
+  --bs-table-active-color: inherit;
+  --bs-table-active-bg: var(--color-hover, #F1F5F9);
+  --bs-table-hover-color: inherit;
+  --bs-table-hover-bg: var(--color-hover, #F1F5F9);
+  margin-bottom: 0;
+}
+
+/* Alert */
+.alert {
+  --bs-alert-border-radius: var(--radius, 10px);
+  --bs-alert-border-width: 1px;
+}
+
+/* Badge */
+.badge {
+  --bs-badge-font-weight: var(--font-weight-medium, 500);
+  --bs-badge-border-radius: var(--radius-full, 9999px);
+}
+
+/* Tooltip */
+.tooltip {
+  --bs-tooltip-bg: var(--color-text-primary, #0F172A);
+  --bs-tooltip-color: white;
+  --bs-tooltip-border-radius: var(--radius-sm, 6px);
+}
+
+/* Popover */
+.popover {
+  --bs-popover-border-radius: var(--radius-md, 12px);
+  --bs-popover-border-color: var(--color-border, #E2E8F0);
+}
+
+/* Progress */
+.progress {
+  --bs-progress-height: 6px;
+  --bs-progress-bg: var(--color-border, #E2E8F0);
+  --bs-progress-border-radius: var(--radius-full, 9999px);
+}
+
+/* Pagination */
+.pagination {
+  --bs-pagination-border-radius: var(--radius, 10px);
+  --bs-pagination-color: var(--color-text-primary, #111827);
+  --bs-pagination-hover-color: var(--color-primary, #315EFB);
+  --bs-pagination-active-bg: var(--color-primary, #315EFB);
+  --bs-pagination-active-border-color: var(--color-primary, #315EFB);
+  --bs-pagination-focus-box-shadow: 0 0 0 3px rgba(49, 94, 251, 0.15);
+}
+
+/* Card */
+.card {
+  --bs-card-border-color: var(--color-border, #E2E8F0);
+  --bs-card-border-radius: var(--radius-md, 12px);
+  --bs-card-inner-border-radius: calc(var(--radius-md, 12px) - 1px);
+  --bs-card-cap-bg: transparent;
+  --bs-card-bg: var(--color-surface, #FFFFFF);
+}
+
+/* Nav tabs */
+.nav-tabs {
+  --bs-nav-tabs-border-width: 0;
+  --bs-nav-tabs-border-color: transparent;
+  --bs-nav-tabs-link-active-color: var(--color-primary, #2563EB);
+}
+
+/* Offcanvas */
+.offcanvas { --bs-offcanvas-border-width: 0; }
+
+/* Accordion */
+.accordion {
+  --bs-accordion-border-color: var(--color-border, #E2E8F0);
+  --bs-accordion-border-radius: var(--radius, 10px);
+  --bs-accordion-inner-border-radius: var(--radius, 10px);
+  --bs-accordion-btn-focus-box-shadow: none;
+  --bs-accordion-active-color: var(--color-primary, #2563EB);
+  --bs-accordion-active-bg: var(--color-primary-light, #EFF6FF);
+}

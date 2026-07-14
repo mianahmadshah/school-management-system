@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Teacher Dashboard - EduCore SMS{% endblock %}
+{% block page_title %}My Dashboard{% endblock %}
+
+{% block content %}
+<!-- Welcome Banner -->
+<div class="welcome-banner animate-fade-in">
+    <div class="welcome-banner-content">
+        <h2>Good day, {{ request.user.first_name }}! 📚</h2>
+        <p>Here is an overview of your classes and activities today.</p>
+    </div>
+    <i class="bi bi-mortarboard welcome-banner-icon"></i>
+</div>
+
+<!-- Teacher Stats Row -->
+<div class="stats-row mb-4">
+    <div class="stat-item animate-fade-in-up delay-1">
+        <div class="stat-item-header">
+            <div class="stat-item-icon primary">
+                <i class="bi bi-collection"></i>
+            </div>
+        </div>
+        <div class="stat-item-value">{{ subjects_taught|default:"0" }}</div>
+        <div class="stat-item-label">My Subjects</div>
+    </div>
+
+    <div class="stat-item animate-fade-in-up delay-2">
+        <div class="stat-item-header">
+            <div class="stat-item-icon success">
+                <i class="bi bi-people-fill"></i>
+            </div>
+        </div>
+        <div class="stat-item-value">{{ total_students|default:"0" }}</div>
+        <div class="stat-item-label">Total Students</div>
+    </div>
+
+    <div class="stat-item animate-fade-in-up delay-3">
+        <div class="stat-item-header">
+            <div class="stat-item-icon warning">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+        </div>
+        <div class="stat-item-value">{{ today_classes|default:"0" }}</div>
+        <div class="stat-item-label">Today's Classes</div>
+    </div>
+</div>
+
+<!-- Teacher Stats Grid -->
+<div class="stats-grid">
+    <div class="stats-card animate-fade-in-up delay-1">
+        <div class="stats-card-header">
+            <div class="stats-card-icon primary"><i class="bi bi-collection"></i></div>
+        </div>
+        <div class="stats-card-label">My Subjects</div>
+        <h3 class="stats-card-value">{{ subjects_taught|default:"0" }}</h3>
+    </div>
+
+    <div class="stats-card animate-fade-in-up delay-2">
+        <div class="stats-card-header">
+            <div class="stats-card-icon success"><i class="bi bi-people-fill"></i></div>
+        </div>
+        <div class="stats-card-label">Total Students</div>
+        <h3 class="stats-card-value">{{ total_students|default:"0" }}</h3>
+    </div>
+
+    <div class="stats-card animate-fade-in-up delay-3">
+        <div class="stats-card-header">
+            <div class="stats-card-icon warning"><i class="bi bi-calendar-check"></i></div>
+        </div>
+        <div class="stats-card-label">Today's Classes</div>
+        <h3 class="stats-card-value">{{ today_classes|default:"0" }}</h3>
+    </div>
+
+    <div class="stats-card animate-fade-in-up delay-4">
+        <div class="stats-card-header">
+            <div class="stats-card-icon info"><i class="bi bi-file-earmark-text"></i></div>
+        </div>
+        <div class="stats-card-label">Pending Tasks</div>
+        <h3 class="stats-card-value">{{ pending_assignments|default:"0" }}</h3>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card card-accent card-accent-primary mb-4">
+    <div class="card-header bg-white py-3 border-0">
+        <h5 class="card-header-title">Quick Actions</h5>
+    </div>
+    <div class="card-body pt-0">
+        <div class="quick-actions">
+            <a href="{% url 'mark_attendance' %}" class="quick-action-item">
+                <div class="quick-action-icon"><i class="bi bi-calendar-check"></i></div>
+                <span class="quick-action-label">Take Attendance</span>
+            </a>
+            <a href="{% url 'marks_entry' %}" class="quick-action-item">
+                <div class="quick-action-icon"><i class="bi bi-file-earmark-arrow-up"></i></div>
+                <span class="quick-action-label">Enter Marks</span>
+            </a>
+            <a href="{% url 'my_timetable' %}" class="quick-action-item">
+                <div class="quick-action-icon"><i class="bi bi-calendar3"></i></div>
+                <span class="quick-action-label">My Timetable</span>
+            </a>
+            <a href="{% url 'announcement_list' %}" class="quick-action-item">
+                <div class="quick-action-icon"><i class="bi bi-megaphone"></i></div>
+                <span class="quick-action-label">Announcements</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Two Column: Recent Activity & Assignments -->
+<div class="dashboard-row dashboard-grid-2">
+    <!-- Recent Activity -->
+    <div class="card h-100">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+            <h5 class="card-header-title">Recent Activity</h5>
+        </div>
+        <div class="card-body pt-0">
+            {% if activity_logs %}
+                <ul class="activity-feed">
+                    {% for log in activity_logs|slice:":8" %}
+                        <li class="activity-feed-item">
+                            <div class="activity-feed-icon primary"><i class="bi bi-activity"></i></div>
+                            <div class="activity-feed-content">
+                                <div class="activity-feed-text">{{ log.description }}</div>
+                                <div class="activity-feed-time">{{ log.created_at|timesince }} ago</div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="bi bi-journal-x"></i></div>
+                    <h6 class="empty-state-title">No recent activity</h6>
+                    <p class="empty-state-description">Your recent actions will appear here.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Pending Assignments -->
+    <div class="card h-100">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+            <h5 class="card-header-title">Pending Submissions</h5>
+            <a href="{% url 'assignment_list' %}" class="btn btn-ghost btn-sm">View All</a>
+        </div>
+        <div class="card-body pt-0">
+            {% if pending_submissions %}
+                <ul class="activity-feed">
+                    {% for submission in pending_submissions|slice:":8" %}
+                        <li class="activity-feed-item">
+                            <div class="activity-feed-icon warning"><i class="bi bi-file-earmark"></i></div>
+                            <div class="activity-feed-content">
+                                <div class="activity-feed-text">
+                                    <strong>{{ submission.student }}</strong> - {{ submission.assignment.title }}
+                                </div>
+                                <div class="activity-feed-time">{{ submission.submitted_at|timesince }} ago</div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="bi bi-check-circle"></i></div>
+                    <h6 class="empty-state-title">All caught up!</h6>
+                    <p class="empty-state-description">No pending submissions to review.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Schedule -->
+<div class="card">
+    <div class="card-header bg-white py-3 border-0">
+        <h5 class="card-header-title">Today's Schedule</h5>
+    </div>
+    <div class="card-body pt-0">
+        {% if today_schedule %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Period</th>
+                            <th>Subject</th>
+                            <th>Class</th>
+                            <th>Time</th>
+                            <th>Room</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for period in today_schedule %}
+                        <tr>
+                            <td>{{ period.period_number }}</td>
+                            <td><span class="badge badge-primary">{{ period.subject }}</span></td>
+                            <td>{{ period.class_group }}</td>
+                            <td>{{ period.start_time|time:"g:i A" }} - {{ period.end_time|time:"g:i A" }}</td>
+                            <td>{{ period.room }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="bi bi-calendar"></i></div>
+                <h6 class="empty-state-title">No classes scheduled today</h6>
+                <p class="empty-state-description">Enjoy your day off or use this time for planning!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

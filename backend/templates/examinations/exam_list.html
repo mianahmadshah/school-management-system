@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Exams - EduCore SMS{% endblock %}
+{% block page_title %}Exams & Results{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Examinations</h1>
+        <p class="page-header-subtitle">Manage exams, enter marks, and view results.</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'exam_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Create Exam
+        </a>
+    </div>
+</div>
+
+<!-- Exams Table -->
+<div class="table-container">
+    <div class="table-header">
+        <div class="table-header-left">
+            <h5 class="table-title">All Exams</h5>
+            <span class="table-subtitle">{{ exams|length }} total</span>
+        </div>
+        <div class="table-header-right">
+            <div class="table-search">
+                <i class="bi bi-search"></i>
+                <input type="text" class="form-control" placeholder="Search exams..." id="tableSearch">
+            </div>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-hover" id="examsTable">
+            <thead>
+                <tr>
+                    <th>Exam Title</th>
+                    <th>Class</th>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Total Marks</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if exams %}
+                    {% for exam in exams %}
+                    <tr>
+                        <td>
+                            <div class="table-cell-name">
+                                <div class="name-info">
+                                    <span class="name">{{ exam.title }}</span>
+                                    <span class="subtitle">{{ exam.exam_type|default:"Regular" }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ exam.class_group|default:"All" }}</td>
+                        <td>{{ exam.subject|default:"All Subjects" }}</td>
+                        <td>{{ exam.date|date:"M d, Y" }}</td>
+                        <td>{{ exam.total_marks }}</td>
+                        <td>
+                            <span class="badge-status {% if exam.status == 'completed' %}badge-status-active{% elif exam.status == 'ongoing' %}badge-status-pending{% else %}badge-status-inactive{% endif %}">
+                                {{ exam.status|title|default:"Upcoming" }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="table-cell-actions">
+                                <a href="{% url 'exam_detail' exam.pk %}" class="btn btn-icon btn-sm btn-ghost" title="View details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'exam_update' exam.pk %}" class="btn btn-icon btn-sm btn-ghost" title="Edit exam">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'marks_entry' %}?exam={{ exam.pk }}" class="btn btn-icon btn-sm btn-ghost" title="Enter marks">
+                                    <i class="bi bi-file-earmark-arrow-up"></i>
+                                </a>
+                                <a href="{% url 'exam_delete' exam.pk %}" class="btn btn-icon btn-sm btn-ghost text-danger" title="Delete exam">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="table-empty">
+                                <div class="table-empty-icon"><i class="bi bi-journal-text"></i></div>
+                                <p class="table-empty-text">No exams found</p>
+                                <p class="table-empty-subtext">Create your first exam to get started.</p>
+                                <a href="{% url 'exam_create' %}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-plus-lg"></i> Create Exam
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if exams %}
+    <div class="table-footer">
+        <div class="table-info">
+            Showing {{ exams|length }} exam{% if exams|length != 1 %}s{% endif %}
+        </div>
+        <div class="table-actions">
+            {% if is_paginated %}
+            <nav aria-label="Exam list pagination">
+                <ul class="pagination pagination-sm mb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('tableSearch');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const query = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#examsTable tbody tr');
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(query) ? '' : 'none';
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

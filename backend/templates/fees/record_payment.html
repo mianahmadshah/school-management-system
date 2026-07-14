@@ -1,0 +1,28 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Record Payment - EduCore SMS{% endblock %}
+{% block page_title %}Record Payment{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div><a href="{% url 'invoice_detail' pk=invoice.pk %}" class="text-decoration-none text-muted"><i class="bi bi-arrow-left"></i> Back to Invoice</a></div>
+</div>
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="fw-semibold mb-3">Payment for Invoice {{ invoice.invoice_number }}</h5>
+                <p class="text-muted mb-4">Student: <strong>{{ invoice.student.full_name }}</strong></p>
+                <form method="POST">{% csrf_token %}
+                    <div class="mb-3"><label class="form-label">Amount</label>{{ form.amount }}{% if form.amount.errors %}<div class="text-danger small">{{ form.amount.errors }}</div>{% endif %}</div>
+                    <div class="mb-3"><label class="form-label">Payment Method</label>{{ form.payment_method }}{% if form.payment_method.errors %}<div class="text-danger small">{{ form.payment_method.errors }}</div>{% endif %}</div>
+                    <div class="mb-3"><label class="form-label">Reference Number</label>{{ form.reference_number }}</div>
+                    <div class="mb-3"><label class="form-label">Remarks</label>{{ form.remarks }}</div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'invoice_detail' pk=invoice.pk %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Save Payment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

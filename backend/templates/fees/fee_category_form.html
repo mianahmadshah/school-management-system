@@ -1,0 +1,24 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{% if form.instance.pk %}Edit{% else %}Add{% endif %} Fee Category - EduCore SMS{% endblock %}
+{% block page_title %}{% if form.instance.pk %}Edit Fee Category{% else %}Add Fee Category{% endif %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" novalidate>{% csrf_token %}
+                    <div class="mb-3"><label class="form-label">Name <span class="text-danger">*</span></label>{{ form.name }}{% if form.instance.pk %}<input type="hidden" name="pk" value="{{ form.instance.pk }}">{% endif %}{% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}</div>
+                    <div class="mb-3"><label class="form-label">Code <span class="text-danger">*</span></label>{{ form.code }}{% if form.code.errors %}<div class="text-danger small">{{ form.code.errors }}</div>{% endif %}</div>
+                    <div class="mb-3"><label class="form-label">Default Amount</label>{{ form.default_amount }}{% if form.default_amount.errors %}<div class="text-danger small">{{ form.default_amount.errors }}</div>{% endif %}</div>
+                    <div class="mb-3"><label class="form-label">Description</label>{{ form.description }}{% if form.description.errors %}<div class="text-danger small">{{ form.description.errors }}</div>{% endif %}</div>
+                    <div class="form-check mb-3">{{ form.is_active }} <label class="form-check-label">Active</label></div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'fee_category_list' %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">{% if form.instance.pk %}Update{% else %}Create{% endif %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

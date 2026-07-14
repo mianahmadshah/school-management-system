@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ subject.name }} - EduCore SMS{% endblock %}
+{% block page_title %}{{ subject.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'subject_list' %}" class="text-decoration-none text-muted">
+            <i class="bi bi-arrow-left"></i> Back to Subjects
+        </a>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'subject_update' subject.pk %}" class="btn btn-warning">
+            <i class="bi bi-pencil"></i> Edit Subject
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title fw-semibold mb-3">
+                    <i class="bi bi-info-circle text-primary"></i> Subject Information
+                </h5>
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <td class="text-muted ps-0">Name:</td>
+                        <td class="fw-semibold">{{ subject.name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted ps-0">Code:</td>
+                        <td><code>{{ subject.code }}</code></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted ps-0">Class:</td>
+                        <td>{{ subject.school_class.name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted ps-0">Teacher:</td>
+                        <td>{% if subject.teacher %}{{ subject.teacher.full_name }}{% else %}<span class="text-muted">Not assigned</span>{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted ps-0">Type:</td>
+                        <td><span class="badge bg-light text-dark">{{ subject.get_subject_type_display }}</span></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted ps-0">Credits:</td>
+                        <td>{{ subject.credits }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted ps-0">Status:</td>
+                        <td>
+                            {% if subject.is_active %}
+                                <span class="badge badge-success-subtle">Active</span>
+                            {% else %}
+                                <span class="badge badge-danger-subtle">Inactive</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+                {% if subject.description %}
+                <hr>
+                <p class="text-muted mb-0 small">{{ subject.description }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

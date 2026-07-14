@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Teachers - EduCore SMS{% endblock %}
+{% block page_title %}Teacher Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Teacher Directory</h2>
+        <p class="page-header-subtitle">Manage and search all teacher records</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'teacher_create' %}" class="btn btn-primary">
+            <i class="bi bi-person-plus-fill"></i> Add New Teacher
+        </a>
+    </div>
+</div>
+
+<!-- Search & Filters Card -->
+<div class="filter-bar mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <!-- Search Text -->
+        <div class="col-md-4">
+            <label for="q" class="form-label fw-semibold text-secondary" style="font-size: 0.85rem;">Search Teacher</label>
+            <div class="input-icon-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" id="q" class="form-control" placeholder="Name, employee ID, specialization..." value="{{ request.GET.q }}">
+            </div>
+        </div>
+
+            <!-- Department Filter -->
+            <div class="col-md-2">
+                <label for="department" class="form-label fw-semibold text-secondary" style="font-size: 0.85rem;">Department</label>
+                <select name="department" id="department" class="form-select">
+                    <option value="">All Departments</option>
+                    {% for dept in departments %}
+                        <option value="{{ dept }}" {% if request.GET.department == dept %}selected{% endif %}>{{ dept }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Employment Type Filter -->
+            <div class="col-md-2">
+                <label for="employment_type" class="form-label fw-semibold text-secondary" style="font-size: 0.85rem;">Employment Type</label>
+                <select name="employment_type" id="employment_type" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="FULL_TIME" {% if request.GET.employment_type == 'FULL_TIME' %}selected{% endif %}>Full Time</option>
+                    <option value="PART_TIME" {% if request.GET.employment_type == 'PART_TIME' %}selected{% endif %}>Part Time</option>
+                    <option value="CONTRACT" {% if request.GET.employment_type == 'CONTRACT' %}selected{% endif %}>Contract</option>
+                    <option value="VISITING" {% if request.GET.employment_type == 'VISITING' %}selected{% endif %}>Visiting</option>
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="col-md-2">
+                <label for="status" class="form-label fw-semibold text-secondary" style="font-size: 0.85rem;">Status</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="ACTIVE" {% if request.GET.status == 'ACTIVE' %}selected{% endif %}>Active</option>
+                    <option value="INACTIVE" {% if request.GET.status == 'INACTIVE' %}selected{% endif %}>Inactive</option>
+                    <option value="ON_LEAVE" {% if request.GET.status == 'ON_LEAVE' %}selected{% endif %}>On Leave</option>
+                </select>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100 py-2"><i class="bi bi-funnel-fill me-1"></i> Filter</button>
+                <a href="{% url 'teacher_list' %}" class="btn btn-light border w-100 py-2"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Teachers List -->
+<div class="table-container">
+    <div class="table-header">
+        <div class="table-header-left">
+            <h5 class="table-title">Teacher Directory</h5>
+            <span class="table-subtitle">{{ teachers|length }} total</span>
+        </div>
+    </div>
+    <div class="table-responsive">
+            <table class="table align-middle m-0 data-table">
+                <thead>
+                    <tr>
+                        <th>Teacher</th>
+                        <th>Employee ID</th>
+                        <th>Department</th>
+                        <th>Specialization</th>
+                        <th>Status</th>
+                        <th>Employment</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for teacher in teachers %}
+                        <tr>
+                        <td>
+                            <div class="table-cell-name">
+                                {% if teacher.photo %}
+                                    <img src="{{ teacher.photo.url }}" alt="Photo" class="avatar avatar-sm" style="border-radius: 50%; object-fit: cover;">
+                                {% else %}
+                                    <div class="avatar avatar-sm">{{ teacher.user.first_name|slice:":1"|upper }}{{ teacher.user.last_name|slice:":1"|upper }}</div>
+                                {% endif %}
+                                <div class="name-info">
+                                    <span class="name">{{ teacher.user.get_full_name }}</span>
+                                    <span class="subtitle">{{ teacher.user.email }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-secondary">{{ teacher.employee_id }}</span></td>
+                        <td>{{ teacher.department|default:"—" }}</td>
+                        <td>{{ teacher.specialization|default:"—" }}</td>
+                        <td>
+                            {% if teacher.status == 'ACTIVE' %}
+                                <span class="badge-status badge-status-active">Active</span>
+                            {% elif teacher.status == 'ON_LEAVE' %}
+                                <span class="badge-status badge-status-pending">On Leave</span>
+                            {% else %}
+                                <span class="badge-status badge-status-inactive">{{ teacher.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ teacher.get_employment_type_display }}</td>
+                        <td>
+                            <div class="table-cell-actions">
+                                <a href="{% url 'teacher_detail' teacher.pk %}" class="btn btn-icon btn-sm btn-ghost" title="View details" aria-label="View {{ teacher.user.get_full_name }}"><i class="bi bi-eye"></i></a>
+                                <a href="{% url 'teacher_update' teacher.pk %}" class="btn btn-icon btn-sm btn-ghost" title="Edit Profile" aria-label="Edit {{ teacher.user.get_full_name }}"><i class="bi bi-pencil"></i></a>
+                                <a href="{% url 'teacher_delete' teacher.pk %}" class="btn btn-icon btn-sm btn-ghost text-danger" title="Delete Profile" aria-label="Delete {{ teacher.user.get_full_name }}"><i class="bi bi-trash"></i></a>
+                            </div>
+                        </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7">
+                                <div class="table-empty">
+                                    <div class="table-empty-icon"><i class="bi bi-people"></i></div>
+                                    <p class="table-empty-text">No teachers found</p>
+                                    <p class="table-empty-subtext">No teacher records match the search query.</p>
+                                    <a href="{% url 'teacher_create' %}" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-person-plus"></i> Add Teacher
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+    </div>
+    
+    {% if is_paginated %}
+    <div class="table-footer">
+        <div class="table-info">
+            Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ paginator.count }} entries
+        </div>
+        <div class="table-actions">
+            <nav>
+                <ul class="pagination pagination-sm m-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page=1&{{ query_params }}"><i class="bi bi-chevron-double-left"></i></a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ query_params }}"><i class="bi bi-chevron-left"></i></a></li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ query_params }}"><i class="bi bi-chevron-right"></i></a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ paginator.num_pages }}&{{ query_params }}"><i class="bi bi-chevron-double-right"></i></a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Profile - EduCore SMS{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+<!-- Profile Header -->
+<div class="profile-header animate-fade-in">
+    <div class="row align-items-center">
+        <div class="col-md-3 text-center mb-3 mb-md-0">
+            <div class="profile-avatar-large">
+                {{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}
+            </div>
+        </div>
+        <div class="col-md-9">
+            <h1 class="profile-name">{{ request.user.get_full_name }}</h1>
+            <p class="profile-role">{{ request.user.role|lower }}</p>
+            <p class="text-secondary mb-2">{{ request.user.email }}</p>
+            {% if request.user.phone %}
+            <p class="text-secondary mb-2">
+                <i class="bi bi-telephone me-2"></i>{{ request.user.phone }}
+            </p>
+            {% endif %}
+            <div class="profile-stats">
+                <div class="profile-stat">
+                    <div class="profile-stat-value">{{ request.user.date_joined|date:"M Y" }}</div>
+                    <div class="profile-stat-label">Member Since</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value">{{ request.user.last_login|timesince }} ago</div>
+                    <div class="profile-stat-label">Last Active</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Update Form -->
+<div class="card animate-fade-in-up delay-2">
+    <div class="card-header bg-white py-3 border-0">
+        <h5 class="card-header-title">Update Profile Information</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+            
+            <div class="form-row">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label class="form-label" for="id_first_name">First Name</label>
+                        <input type="text" name="first_name" id="id_first_name" class="form-control" value="{{ request.user.first_name }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="id_last_name">Last Name</label>
+                        <input type="text" name="last_name" id="id_last_name" class="form-control" value="{{ request.user.last_name }}" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="id_email">Email Address</label>
+                <input type="email" name="email" id="id_email" class="form-control" value="{{ request.user.email }}" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label class="form-label" for="id_phone">Phone Number</label>
+                        <input type="tel" name="phone" id="id_phone" class="form-control" value="{{ request.user.phone|default:'' }}" placeholder="+1 (555) 000-0000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="id_date_of_birth">Date of Birth</label>
+                        <input type="date" name="date_of_birth" id="id_date_of_birth" class="form-control" value="{{ request.user.date_of_birth|date:'Y-m-d'|default:'' }}">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="id_gender">Gender</label>
+                <select name="gender" id="id_gender" class="form-select">
+                    <option value="">Select gender</option>
+                    <option value="MALE" {% if request.user.gender == 'MALE' %}selected{% endif %}>Male</option>
+                    <option value="FEMALE" {% if request.user.gender == 'FEMALE' %}selected{% endif %}>Female</option>
+                    <option value="OTHER" {% if request.user.gender == 'OTHER' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="id_address">Address</label>
+                <textarea name="address" id="id_address" class="form-control" rows="3" placeholder="Enter your full address">{{ request.user.address|default:'' }}</textarea>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{% url 'password_change' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-key"></i> Change Password
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

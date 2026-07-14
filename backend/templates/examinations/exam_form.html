@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}Add{% endif %} Exam - EduCore SMS{% endblock %}
+{% block page_title %}{% if form.instance.pk %}Edit Exam{% else %}Add New Exam{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="form-card">
+            <div class="form-card-header">
+                <h4>{% if form.instance.pk %}Edit Exam Details{% else %}Create New Exam{% endif %}</h4>
+            </div>
+            <div class="form-card-body">
+                <form method="POST" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information -->
+                    <div class="form-section">
+                        <h5 class="form-section-title">Basic Information</h5>
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label class="form-label required">Exam Name</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}<div class="invalid-feedback d-block">{{ form.name.errors }}</div>{% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Exam Type</label>
+                                {{ form.exam_type }}
+                            </div>
+                        </div>
+                        <div class="form-row-3">
+                            <div class="form-group">
+                                <label class="form-label required">Subject</label>
+                                {{ form.subject }}
+                                {% if form.subject.errors %}<div class="invalid-feedback d-block">{{ form.subject.errors }}</div>{% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Class</label>
+                                {{ form.school_class }}
+                                {% if form.school_class.errors %}<div class="invalid-feedback d-block">{{ form.school_class.errors }}</div>{% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Description</label>
+                                {{ form.description }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Marks Configuration -->
+                    <div class="form-section">
+                        <h5 class="form-section-title">Marks Configuration</h5>
+                        <div class="form-row-3">
+                            <div class="form-group">
+                                <label class="form-label">Total Marks</label>
+                                {{ form.total_marks }}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Passing Marks</label>
+                                {{ form.passing_marks }}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Duration (minutes)</label>
+                                {{ form.duration_minutes }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Schedule -->
+                    <div class="form-section">
+                        <h5 class="form-section-title">Schedule</h5>
+                        <div class="form-row-3">
+                            <div class="form-group">
+                                <label class="form-label">Start Date</label>
+                                {{ form.start_date }}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">End Date</label>
+                                {{ form.end_date }}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Exam Date</label>
+                                {{ form.exam_date }}
+                            </div>
+                        </div>
+                        <div class="form-row-3">
+                            <div class="form-group">
+                                <label class="form-label">Start Time</label>
+                                {{ form.exam_time_start }}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">End Time</label>
+                                {{ form.exam_time_end }}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Room Number</label>
+                                {{ form.room_number }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="form-section">
+                        <h5 class="form-section-title">Status</h5>
+                        <div class="d-flex gap-4">
+                            <div class="form-check">
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Active</label>
+                            </div>
+                            <div class="form-check">
+                                {{ form.is_published }}
+                                <label class="form-check-label" for="{{ form.is_published.id_for_label }}">Published</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <a href="{% url 'exam_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-lg"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> {% if form.instance.pk %}Update Exam{% else %}Create Exam{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

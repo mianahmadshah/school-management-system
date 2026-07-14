@@ -212,32 +212,3 @@ class FeePayment(models.Model):
     def __str__(self):
         return f"Payment of {self.amount} for {self.invoice.invoice_number}"
 
-    def save(self, *args, **kwargs):
-        """Update invoice amount_paid and status when payment is recorded."""
-        super().save(*args, **kwargs)
-        # Update invoice
-        self.invoice.amount_paid = sum(
-            p.amount for p in self.invoice.payments.all()
-        )
-        self.invoice.update_status()
-
-
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'fee_payments'
-        verbose_name = 'Fee Payment'
-        verbose_name_plural = 'Fee Payments'
-        ordering = ['-payment_date']
-
-    def __str__(self):
-        return f"Payment of {self.amount} for {self.invoice.invoice_number}"
-
-    def save(self, *args, **kwargs):
-        is_new = self.pk is None
-        super().save(*args, **kwargs)
-        
-        # When a payment is created, update the invoice's amount_paid and status
-        if is_new:
-            self.invoice.amount_paid += self.amount
-            self.invoice.update_status()

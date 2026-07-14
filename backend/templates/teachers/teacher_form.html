@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if object %}Edit Teacher: {{ object.full_name }}{% else %}Add New Teacher{% endif %} - EduCore SMS
+{% endblock %}
+
+{% block page_title %}
+    {% if object %}Edit Teacher Profile{% else %}Register Teacher{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'teacher_list' %}" class="btn btn-light border btn-sm"><i class="bi bi-arrow-left me-1"></i> Back to Teacher Directory</a>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <div class="row">
+        <!-- Credentials Card -->
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="fw-bold text-dark m-0"><i class="bi bi-shield-lock me-2 text-success"></i>Login Credentials</h5>
+                </div>
+                <div class="card-body p-4 pt-0">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">First Name</label>
+                            {{ user_form.first_name }}
+                            {% if user_form.first_name.errors %}<div class="text-danger text-xs mt-1">{{ user_form.first_name.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Last Name</label>
+                            {{ user_form.last_name }}
+                            {% if user_form.last_name.errors %}<div class="text-danger text-xs mt-1">{{ user_form.last_name.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Email Address</label>
+                            {{ user_form.email }}
+                            {% if user_form.email.errors %}<div class="text-danger text-xs mt-1">{{ user_form.email.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Phone Number</label>
+                            {{ user_form.phone }}
+                            {% if user_form.phone.errors %}<div class="text-danger text-xs mt-1">{{ user_form.phone.errors.0 }}</div>{% endif %}
+                        </div>
+                        {% if not object %}
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Temporary Password</label>
+                            {{ user_form.password }}
+                            {% if user_form.password.errors %}<div class="text-danger text-xs mt-1">{{ user_form.password.errors.0 }}</div>{% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Professional Details Card -->
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="fw-bold text-dark m-0"><i class="bi bi-briefcase me-2 text-success"></i>Professional Details</h5>
+                </div>
+                <div class="card-body p-4 pt-0">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Employee ID</label>
+                            {{ form.employee_id }}
+                            {% if form.employee_id.errors %}<div class="text-danger text-xs mt-1">{{ form.employee_id.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Department</label>
+                            {{ form.department }}
+                            {% if form.department.errors %}<div class="text-danger text-xs mt-1">{{ form.department.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Designation</label>
+                            {{ form.designation }}
+                            {% if form.designation.errors %}<div class="text-danger text-xs mt-1">{{ form.designation.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Joining Date</label>
+                            {{ form.joining_date }}
+                            {% if form.joining_date.errors %}<div class="text-danger text-xs mt-1">{{ form.joining_date.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Employment Type</label>
+                            {{ form.employment_type }}
+                            {% if form.employment_type.errors %}<div class="text-danger text-xs mt-1">{{ form.employment_type.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Status</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}<div class="text-danger text-xs mt-1">{{ form.status.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Highest Qualification</label>
+                            {{ form.highest_qualification }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Subject Specialization</label>
+                            {{ form.specialization }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Experience (Years)</label>
+                            {{ form.experience_years }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Monthly Salary (PKR)</label>
+                            {{ form.salary }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Details Card -->
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="fw-bold text-dark m-0"><i class="bi bi-person me-2 text-success"></i>Personal Details</h5>
+                </div>
+                <div class="card-body p-4 pt-0">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Date of Birth</label>
+                            {{ form.date_of_birth }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Gender</label>
+                            {{ form.gender }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Religion</label>
+                            {{ form.religion }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Nationality</label>
+                            {{ form.nationality }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Emergency Contact</label>
+                            {{ form.emergency_contact }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">Upload Photo</label>
+                            {{ form.photo }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-secondary">Residential Address</label>
+                            {{ form.address }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bank / Payroll Card -->
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="fw-bold text-dark m-0"><i class="bi bi-bank me-2 text-success"></i>Bank & Payroll Information</h5>
+                </div>
+                <div class="card-body p-4 pt-0">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary">Bank Name</label>
+                            {{ form.bank_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary">Bank Account Number</label>
+                            {{ form.bank_account_number }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="col-12 mb-5 d-flex justify-content-end gap-3">
+            <a href="{% url 'teacher_list' %}" class="btn btn-light border px-4 py-2 rounded-3 fw-semibold">Cancel</a>
+            <button type="submit" class="btn btn-success px-5 py-2 rounded-3 fw-semibold shadow-sm">
+                {% if object %}Update Profile{% else %}Register Teacher{% endif %}
+            </button>
+        </div>
+    </div>
+</form>
+{% endblock %}

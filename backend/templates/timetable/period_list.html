@@ -1,0 +1,34 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Periods - EduCore SMS{% endblock %}
+{% block page_title %}Periods{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div><p class="text-muted mb-0">Define time slots for classes</p></div>
+    <a href="{% url 'period_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Period</a>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table data-table table-hover mb-0">
+                <thead><tr><th>Name</th><th>Time</th><th>Break</th><th>Order</th><th class="text-end">Actions</th></tr></thead>
+                <tbody>
+                    {% for p in periods %}
+                    <tr>
+                        <td class="fw-semibold">{{ p.name }}</td>
+                        <td>{{ p.start_time|time:"H:i" }} - {{ p.end_time|time:"H:i" }}</td>
+                        <td>{% if p.is_break %}<span class="badge bg-secondary">Break</span>{% else %}<span class="badge bg-light text-dark">Class</span>{% endif %}</td>
+                        <td>{{ p.order }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'period_update' p.pk %}" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'period_delete' p.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center py-5"><p class="text-muted mb-2">No periods found.</p><a href="{% url 'period_create' %}" class="btn btn-primary">Add First Period</a></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

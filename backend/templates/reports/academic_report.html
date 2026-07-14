@@ -1,0 +1,43 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Academic Report - EduCore SMS{% endblock %}
+{% block page_title %}Academic Report{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div><p class="text-muted mb-0">Academic performance by class</p></div>
+    <a href="{% url 'report_dashboard' %}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back to Reports</a>
+</div>
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Class</label>
+                <select name="class_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Classes</option>
+                    {% for c in classes %}<option value="{{ c.pk }}" {% if request.GET.class_id == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table data-table table-hover mb-0">
+                <thead><tr><th>Class</th><th>Students</th><th>Avg Marks</th><th>Total Marks</th></tr></thead>
+                <tbody>
+                    {% for row in report_data %}
+                    <tr>
+                        <td class="fw-semibold">{{ row.class }}</td>
+                        <td>{{ row.students_count }}</td>
+                        <td>{{ row.avg_marks }}</td>
+                        <td>{{ row.max_marks }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center py-5 text-muted">No academic data found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Enter Marks - EduCore SMS{% endblock %}
+{% block page_title %}Enter Marks{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div><a href="{% url 'exam_list' %}" class="text-decoration-none text-muted"><i class="bi bi-arrow-left"></i> Back to Exams</a></div>
+</div>
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-3"><label class="form-label">Exam <span class="text-danger">*</span></label>
+                <select name="exam_id" class="form-select" required>
+                    <option value="">Select Exam</option>
+                    {% for exam in exams %}<option value="{{ exam.pk }}" {% if selected_exam == exam.pk|stringformat:"s" %}selected{% endif %}>{{ exam.name }} - {{ exam.subject.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3"><label class="form-label">Class <span class="text-danger">*</span></label>
+                <select name="class_id" class="form-select" required>
+                    <option value="">Select Class</option>
+                    {% for class in classes %}<option value="{{ class.pk }}" {% if selected_class == class.pk|stringformat:"s" %}selected{% endif %}>{{ class.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3"><label class="form-label">Subject <span class="text-danger">*</span></label>
+                <select name="subject_id" class="form-select" required>
+                    <option value="">Select Subject</option>
+                    {% for exam in exams %}{% if selected_exam == exam.pk|stringformat:"s" %}<option value="{{ exam.subject.pk }}" selected>{{ exam.subject.name }}</option>{% endif %}{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3"><button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Load Students</button></div>
+        </form>
+    </div>
+</div>
+{% if students %}
+<div class="card">
+    <div class="card-header bg-white"><h5 class="mb-0 fw-semibold"><i class="bi bi-pencil-square text-primary"></i> Enter Marks for {{ exam_obj.name }}</h5></div>
+    <div class="card-body">
+        <form method="POST">{% csrf_token %}
+            <input type="hidden" name="exam" value="{{ selected_exam }}">
+            <input type="hidden" name="school_class" value="{{ selected_class }}">
+            <input type="hidden" name="subject" value="{{ selected_subject }}">
+            <div class="table-responsive">
+                <table class="table data-table table-hover mb-0">
+                    <thead><tr><th>#</th><th>Student</th><th>Roll No</th><th>Obtained Marks</th><th>Practical</th><th>Remarks</th></tr></thead>
+                    <tbody>{% for student in students %}<tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td class="fw-semibold">{{ student.full_name }}</td>
+                        <td>{{ student.roll_number|default:"—" }}</td>
+                        <td><input type="hidden" name="student_ids" value="{{ student.pk }}">
+                            <input type="number" name="obtained_marks" class="form-control form-control-sm" step="0.01" style="width:100px" placeholder="Marks" value="{% if student.pk in existing_marks %}{{ existing_marks|dictsort:student.pk }}{% endif %}">
+                        </td>
+                        <td><input type="number" name="practical_marks" class="form-control form-control-sm" step="0.01" style="width:80px" placeholder="0" value="0"></td>
+                        <td><input type="text" name="remarks_list" class="form-control form-control-sm" placeholder="Optional"></td>
+                    </tr>{% endfor %}</tbody>
+                </table>
+            </div>
+            <div class="mt-4 text-end"><button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save Marks</button></div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

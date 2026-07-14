@@ -110,32 +110,3 @@ class Timetable(models.Model):
         """Return the time slot."""
         return f"{self.period.start_time.strftime('%H:%M')} - {self.period.end_time.strftime('%H:%M')}"
 
-    @property
-    def display_name(self):
-        """Return readable display name."""
-        return f"{self.get_day_of_week_display()} - {self.period.name} - {self.subject.name} ({self.teacher.user.get_full_name()})"
-
-    period = models.ForeignKey(Period, on_delete=models.CASCADE)
-    day_of_week = models.CharField(max_length=15, choices=DayOfWeek.choices)
-    
-    # Subject and teacher can be null if the period is a break or study hall
-    subject = models.ForeignKey(
-        'subjects.Subject', on_delete=models.SET_NULL, null=True, blank=True
-    )
-    teacher = models.ForeignKey(
-        'teachers.Teacher', on_delete=models.SET_NULL, null=True, blank=True
-    )
-    
-    room_number = models.CharField(max_length=20, blank=True, null=True)
-
-    class Meta:
-        db_table = 'timetable'
-        verbose_name = 'Timetable Entry'
-        verbose_name_plural = 'Timetable Entries'
-        # A section cannot have two classes in the same period on the same day
-        unique_together = [['school_class', 'section', 'period', 'day_of_week']]
-        ordering = ['day_of_week', 'period__start_time']
-
-    def __str__(self):
-        subject_name = self.subject.name if self.subject else 'Break'
-        return f"{self.school_class.name} {self.section.name} - {self.day_of_week} - {self.period.name} ({subject_name})"

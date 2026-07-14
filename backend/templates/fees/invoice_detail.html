@@ -1,0 +1,57 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Invoice {{ invoice.invoice_number }} - EduCore SMS{% endblock %}
+{% block page_title %}Invoice Details{% endblock %}
+{% block extra_css %}
+    .progress-bar-invoice { width: {{ invoice.paid_percentage|floatformat:1|default_if_none:'0' }}%; }
+{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div><a href="{% url 'invoice_list' %}" class="text-decoration-none text-muted"><i class="bi bi-arrow-left"></i> Back to Invoices</a></div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'record_payment' invoice.pk %}" class="btn btn-success"><i class="bi bi-cash"></i> Record Payment</a>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="fw-semibold mb-3"><i class="bi bi-receipt text-primary"></i> Invoice Info</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><strong>Invoice #:</strong> {{ invoice.invoice_number }}</li>
+                    <li class="mb-2"><strong>Student:</strong> {{ invoice.student.full_name }}</li>
+                    <li class="mb-2"><strong>Admission #:</strong> {{ invoice.student.admission_number }}</li>
+                    <li class="mb-2"><strong>Class:</strong> {{ invoice.student.current_class.name }}</li>
+                    <li class="mb-2"><strong>Status:</strong> {% if invoice.status == 'PAID' %}<span class="badge badge-success-subtle">Paid</span>{% elif invoice.status == 'PARTIAL' %}<span class="badge badge-warning-subtle">Partial</span>{% else %}<span class="badge badge-danger-subtle">Unpaid</span>{% endif %}</li>
+                    <li class="mb-2"><strong>Issue Date:</strong> {{ invoice.issue_date }}</li>
+                    <li class="mb-2"><strong>Due Date:</strong> {{ invoice.due_date }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="fw-semibold mb-3"><i class="bi bi-currency-dollar text-primary"></i> Payment Summary</h5>
+                <div class="d-flex justify-content-between mb-2"><span>Total Amount:</span><strong>{{ invoice.total_amount }}</strong></div>
+                <div class="d-flex justify-content-between mb-2"><span>Total Paid:</span><strong class="text-success">{{ invoice.amount_paid }}</strong></div>
+                <div class="d-flex justify-content-between mb-2"><span>Balance Due:</span><strong class="text-danger">{{ invoice.balance_due }}</strong></div>
+                <hr>
+                <div class="progress mb-2" style="height: 20px;">
+                    <div class="progress-bar bg-success progress-bar-invoice" role="progressbar">{{ invoice.paid_percentage|floatformat:1|default_if_none:'0' }}%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header bg-white"><h5 class="mb-0 fw-semibold"><i class="bi bi-clock-history text-primary"></i> Payment History</h5></div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table data-table table-hover mb-0">
+                <thead><tr><th>Payment #</th><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th><th>Collected By</th><th>Date</th></tr></thead>
+                <tbody>{% for p in payments %}<tr><td>#{{ p.pk }}</td><td>{{ p.amount }}</td><td>{{ p.get_payment_method_display }}</td><td>{{ p.reference_number|default:"—" }}</td><td><span class="badge bg-light text-dark">{{ p.get_payment_method_display }}</span></td><td>{{ p.collected_by|default:"—" }}</td><td>{{ p.payment_date }}</td></tr>{% empty %}<tr><td colspan="7" class="text-center py-4 text-muted">No payments recorded yet.</td></tr>{% endfor %}</tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

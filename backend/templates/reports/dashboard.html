@@ -1,0 +1,100 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Reports - EduCore SMS{% endblock %}
+{% block page_title %}Reports Dashboard{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Total Students</h6>
+                <h3 class="fw-bold mb-0">{{ total_students }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Total Teachers</h6>
+                <h3 class="fw-bold mb-0">{{ total_teachers }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Fee Collected</h6>
+                <h3 class="fw-bold mb-0 text-success">{{ total_fee_collected }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Fee Pending</h6>
+                <h3 class="fw-bold mb-0 text-danger">{{ total_fee_pending }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Attendance Today</h6>
+                <h3 class="fw-bold mb-0">{{ attendance_today }}</h3>
+                <small class="text-muted">{{ attendance_present }} present</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Avg Exam Score</h6>
+                <h3 class="fw-bold mb-0">{{ avg_result|floatformat:1 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Total Classes</h6>
+                <h3 class="fw-bold mb-0">{{ total_classes }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header bg-white"><h5 class="mb-0 fw-semibold">Report Types</h5></div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <a href="{% url 'report_attendance' %}" class="card text-decoration-none text-dark h-100">
+                    <div class="card-body">
+                        <i class="bi bi-calendar-check text-primary fs-2 mb-2 d-block"></i>
+                        <h6 class="fw-semibold">Attendance Report</h6>
+                        <small class="text-muted">Daily and monthly attendance analytics</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'report_academic' %}" class="card text-decoration-none text-dark h-100">
+                    <div class="card-body">
+                        <i class="bi bi-journal-text text-success fs-2 mb-2 d-block"></i>
+                        <h6 class="fw-semibold">Academic Report</h6>
+                        <small class="text-muted">Exam results and performance</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'report_fees' %}" class="card text-decoration-none text-dark h-100">
+                    <div class="card-body">
+                        <i class="bi bi-credit-card text-warning fs-2 mb-2 d-block"></i>
+                        <h6 class="fw-semibold">Fee Collection Report</h6>
+                        <small class="text-muted">Fee collection and pending dues</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

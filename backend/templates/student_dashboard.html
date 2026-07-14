@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Student Dashboard - EduCore SMS{% endblock %}
+{% block page_title %}My Dashboard{% endblock %}
+
+{% block content %}
+<!-- Welcome Banner -->
+<div class="welcome-banner animate-fade-in">
+    <div class="welcome-banner-content">
+        <h2>Hey, {{ request.user.first_name }}! 🎓</h2>
+        <p>Here is your academic overview at a glance.</p>
+    </div>
+    <i class="bi bi-mortarboard welcome-banner-icon"></i>
+</div>
+
+<!-- Student Stats -->
+<div class="stats-row mb-4">
+    <div class="stat-item animate-fade-in-up delay-1">
+        <div class="stat-item-header">
+            <div class="stat-item-icon primary">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+        </div>
+        <div class="stat-item-value">{{ attendance_percentage|default:"N/A" }}</div>
+        <div class="stat-item-label">Attendance Rate</div>
+    </div>
+
+    <div class="stat-item animate-fade-in-up delay-2">
+        <div class="stat-item-header">
+            <div class="stat-item-icon success">
+                <i class="bi bi-award"></i>
+            </div>
+        </div>
+        <div class="stat-item-value">{{ average_grade|default:"N/A" }}</div>
+        <div class="stat-item-label">Average Grade</div>
+    </div>
+
+    <div class="stat-item animate-fade-in-up delay-3">
+        <div class="stat-item-header">
+            <div class="stat-item-icon warning">
+                <i class="bi bi-file-earmark-text"></i>
+            </div>
+        </div>
+        <div class="stat-item-value">{{ pending_assignments|default:"0" }}</div>
+        <div class="stat-item-label">Pending Assignments</div>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stats-card animate-fade-in-up delay-1">
+        <div class="stats-card-header">
+            <div class="stats-card-icon primary"><i class="bi bi-calendar-check"></i></div>
+        </div>
+        <div class="stats-card-label">Attendance Rate</div>
+        <h3 class="stats-card-value">{{ attendance_percentage|default:"N/A" }}</h3>
+    </div>
+
+    <div class="stats-card animate-fade-in-up delay-2">
+        <div class="stats-card-header">
+            <div class="stats-card-icon success"><i class="bi bi-award"></i></div>
+        </div>
+        <div class="stats-card-label">Average Grade</div>
+        <h3 class="stats-card-value">{{ average_grade|default:"N/A" }}</h3>
+    </div>
+
+    <div class="stats-card animate-fade-in-up delay-3">
+        <div class="stats-card-header">
+            <div class="stats-card-icon warning"><i class="bi bi-file-earmark-text"></i></div>
+        </div>
+        <div class="stats-card-label">Pending Assignments</div>
+        <h3 class="stats-card-value">{{ pending_assignments|default:"0" }}</h3>
+    </div>
+
+    <div class="stats-card animate-fade-in-up delay-4">
+        <div class="stats-card-header">
+            <div class="stats-card-icon info"><i class="bi bi-megaphone"></i></div>
+        </div>
+        <div class="stats-card-label">New Announcements</div>
+        <h3 class="stats-card-value">{{ new_announcements|default:"0" }}</h3>
+    </div>
+</div>
+
+<!-- Two Column: Upcoming & Announcements -->
+<div class="dashboard-row dashboard-grid-2">
+    <!-- Upcoming Schedule -->
+    <div class="card h-100">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+            <h5 class="card-header-title">Today's Schedule</h5>
+            <a href="{% url 'my_timetable' %}" class="btn btn-ghost btn-sm">Full Timetable</a>
+        </div>
+        <div class="card-body pt-0">
+            {% if today_schedule %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Period</th>
+                                <th>Subject</th>
+                                <th>Teacher</th>
+                                <th>Time</th>
+                                <th>Room</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for period in today_schedule %}
+                            <tr>
+                                <td>{{ period.period_number }}</td>
+                                <td><span class="badge badge-primary">{{ period.subject }}</span></td>
+                                <td>{{ period.teacher }}</td>
+                                <td>{{ period.start_time|time:"g:i A" }}</td>
+                                <td>{{ period.room }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="bi bi-calendar"></i></div>
+                    <h6 class="empty-state-title">No classes today</h6>
+                    <p class="empty-state-description">You have no classes scheduled for today.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Announcements -->
+    <div class="card h-100">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+            <h5 class="card-header-title">Latest Announcements</h5>
+            <a href="{% url 'announcement_list' %}" class="btn btn-ghost btn-sm">View All</a>
+        </div>
+        <div class="card-body pt-0">
+            {% if announcements %}
+                {% for announcement in announcements|slice:":5" %}
+                    <div class="announcement-card">
+                        <div class="announcement-card-header">
+                            <h6 class="announcement-card-title">{{ announcement.title }}</h6>
+                            <span class="announcement-card-date">{{ announcement.created_at|date:"M d" }}</span>
+                        </div>
+                        <p class="announcement-card-text">{{ announcement.content|truncatechars:100 }}</p>
+                        <div class="announcement-card-author">By {{ announcement.published_by.get_full_name|default:"Admin" }}</div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="bi bi-megaphone"></i></div>
+                    <h6 class="empty-state-title">No announcements</h6>
+                    <p class="empty-state-description">There are no announcements at this time.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Recent Results -->
+<div class="card">
+    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+        <h5 class="card-header-title">Recent Results</h5>
+        <a href="{% url 'my_results' %}" class="btn btn-ghost btn-sm">View All</a>
+    </div>
+    <div class="card-body pt-0">
+        {% if recent_results %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Exam</th>
+                            <th>Subject</th>
+                            <th>Marks</th>
+                            <th>Grade</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in recent_results %}
+                        <tr>
+                            <td>{{ result.exam }}</td>
+                            <td>{{ result.subject }}</td>
+                            <td>{{ result.marks_obtained }}/{{ result.total_marks }}</td>
+                            <td><span class="badge badge-{% if result.grade == 'A' or result.grade == 'A+' %}success{% elif result.grade == 'B' or result.grade == 'B+' %}primary{% elif result.grade == 'C' or result.grade == 'C+' %}warning{% else %}danger{% endif %}">{{ result.grade }}</span></td>
+                            <td><span class="badge badge-{% if result.status == 'Pass' %}success{% else %}danger{% endif %}">{{ result.status }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="bi bi-journal-text"></i></div>
+                <h6 class="empty-state-title">No results yet</h6>
+                <p class="empty-state-description">Your exam results will appear here once published.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -178,34 +178,3 @@ class Submission(models.Model):
             return self.submitted_at > self.assignment.due_date
         return False
 
-    @property
-    def percentage(self):
-        """Calculate marks percentage."""
-        if self.marks_obtained is None or self.assignment.max_marks == 0:
-            return 0
-        return (self.marks_obtained / self.assignment.max_marks) * 100
-
-    student = models.ForeignKey('students.Student', on_delete=models.CASCADE, related_name='submissions')
-    
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
-    
-    submission_date = models.DateTimeField(null=True, blank=True)
-    attachment = models.FileField(
-        upload_to='assignments/submissions/', 
-        null=True, blank=True,
-        help_text="Student's uploaded work."
-    )
-    student_notes = models.TextField(null=True, blank=True)
-    
-    obtained_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    teacher_feedback = models.TextField(null=True, blank=True)
-
-    class Meta:
-        db_table = 'submissions'
-        verbose_name = 'Submission'
-        verbose_name_plural = 'Submissions'
-        unique_together = [['assignment', 'student']]
-        ordering = ['-submission_date']
-
-    def __str__(self):
-        return f"{self.student.full_name} - {self.assignment.title} ({self.status})"

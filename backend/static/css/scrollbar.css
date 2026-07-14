@@ -1,0 +1,194 @@
+/*
+  scrollbar.css - Custom scrollbar styles
+  Premium SaaS Design System
+*/
+
+/* ===== Webkit Scrollbars (Chrome, Safari, Edge) ===== */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, rgba(49, 94, 251, 0.3) 0%, rgba(109, 124, 251, 0.3) 100%);
+  border-radius: var(--radius-full);
+  border: 2px solid var(--color-background);
+  transition: all var(--transition-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, rgba(49, 94, 251, 0.5) 0%, rgba(109, 124, 251, 0.5) 100%);
+  border-color: var(--color-surface);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(135deg, rgba(49, 94, 251, 0.7) 0%, rgba(109, 124, 251, 0.7) 100%);
+}
+
+/* ===== Firefox Scrollbars ===== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(49, 94, 251, 0.3) transparent;
+}
+
+*:hover {
+  scrollbar-color: rgba(49, 94, 251, 0.5) transparent;
+}
+
+/* ===== Sidebar Scrollbar ===== */
+.sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(49, 94, 251, 0.2);
+  border-radius: var(--radius-full);
+  border: none;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(49, 94, 251, 0.4);
+}
+
+/* ===== Table Scrollbar ===== */
+.table-responsive::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: var(--color-background);
+  border-radius: var(--radius-full);
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  border: none;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+/* ===== Modal Scrollbar ===== */
+.modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal::-webkit-scrollbar-thumb {
+  background: rgba(49, 94, 251, 0.2);
+  border-radius: var(--radius-full);
+}
+
+/* ===== Dropdown Scrollbar ===== */
+.dropdown-menu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.dropdown-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+/* ===== Code Block Scrollbar ===== */
+pre::-webkit-scrollbar {
+  height: 8px;
+}
+
+pre::-webkit-scrollbar-track {
+  background: var(--color-hover);
+  border-radius: var(--radius-sm);
+}
+
+pre::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+pre::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+/* ===== Horizontal Scrollbar ===== */
+.scroll-horizontal {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scroll-horizontal::-webkit-scrollbar {
+  height: 8px;
+}
+
+.scroll-horizontal::-webkit-scrollbar-track {
+  background: var(--color-background);
+  border-radius: var(--radius-full);
+}
+
+.scroll-horizontal::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+/* ===== Hide Scrollbar (for specific elements) ===== */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ===== Smooth Scroll Indicator ===== */
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* ===== Scroll Snap ===== */
+.scroll-snap-x {
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+}
+
+.scroll-snap-y {
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+
+.scroll-snap-start {
+  scroll-snap-align: start;
+}
+
+.scroll-snap-center {
+  scroll-snap-align: center;
+}
+
+.scroll-snap-end {
+  scroll-snap-align: end;
+}
+
+/* ===== Scroll Padding ===== */
+.scroll-padding-top {
+  scroll-padding-top: var(--header-height);
+}
+
+.scroll-padding-bottom {
+  scroll-padding-bottom: var(--section-gap);
+}

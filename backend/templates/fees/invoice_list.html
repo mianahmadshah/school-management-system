@@ -1,0 +1,106 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Fee Invoices - EduCore SMS{% endblock %}
+{% block page_title %}Fee Invoices{% endblock %}
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Fee Invoices</h1>
+        <p class="page-header-subtitle">Student fee invoices and payment records</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'invoice_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> New Invoice
+        </a>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <form method="GET" class="row g-3">
+        {% if user.role != 'STUDENT' %}
+        <div class="col-md-4">
+            <label class="form-label">Student</label>
+            <select name="student_id" class="form-select" onchange="this.form.submit()">
+                <option value="">All Students</option>
+                {% for s in students %}<option value="{{ s.pk }}" {% if request.GET.student_id == s.pk|stringformat:"s" %}selected{% endif %}>{{ s.full_name }} ({{ s.admission_number }})</option>{% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        <div class="{% if user.role == 'STUDENT' %}col-md-4{% else %}col-md-3{% endif %}">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-select" onchange="this.form.submit()">
+                <option value="">All Statuses</option>
+                <option value="UNPAID" {% if request.GET.status == 'UNPAID' %}selected{% endif %}>Unpaid</option>
+                <option value="PARTIAL" {% if request.GET.status == 'PARTIAL' %}selected{% endif %}>Partially Paid</option>
+                <option value="PAID" {% if request.GET.status == 'PAID' %}selected{% endif %}>Paid</option>
+            </select>
+        </div>
+    </form>
+</div>
+
+<!-- Invoices Table -->
+<div class="table-container">
+    <div class="table-header">
+        <div class="table-header-left">
+            <h5 class="table-title">All Invoices</h5>
+            <span class="table-subtitle">{{ invoices|length }} total</span>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Student</th>
+                    <th>Total</th>
+                    <th>Paid</th>
+                    <th>Balance</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in invoices %}
+                <tr>
+                    <td><span class="fw-semibold" style="color: var(--color-primary);">{{ inv.invoice_number }}</span></td>
+                    <td>{{ inv.student.full_name }}</td>
+                    <td>{{ inv.total_amount }}</td>
+                    <td>{{ inv.amount_paid }}</td>
+                    <td>{{ inv.balance_due }}</td>
+                    <td>{{ inv.due_date }}</td>
+                    <td>
+                        {% if inv.status == 'PAID' %}
+                            <span class="badge-status badge-status-active">Paid</span>
+                        {% elif inv.status == 'PARTIAL' %}
+                            <span class="badge-status badge-status-pending">Partial</span>
+                        {% else %}
+                            <span class="badge-status badge-status-inactive">Unpaid</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="table-cell-actions">
+                            <a href="{% url 'invoice_detail' inv.pk %}" class="btn btn-icon btn-sm btn-ghost" title="View Invoice"><i class="bi bi-eye"></i></a>
+                            <a href="{% url 'record_payment' inv.pk %}" class="btn btn-icon btn-sm btn-ghost" title="Record Payment"><i class="bi bi-cash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8">
+                        <div class="table-empty">
+                            <div class="table-empty-icon"><i class="bi bi-receipt"></i></div>
+                            <p class="table-empty-text">No invoices found</p>
+                            <p class="table-empty-subtext">Create your first invoice to get started.</p>
+                            <a href="{% url 'invoice_create' %}" class="btn btn-primary btn-sm">Create Invoice</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

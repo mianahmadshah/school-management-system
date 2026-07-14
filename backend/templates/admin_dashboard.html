@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - EduCore SMS{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Welcome Banner -->
+<div class="welcome-banner animate-fade-in">
+    <div class="welcome-banner-content">
+        <h2>Welcome back, {{ request.user.first_name }}! 👋</h2>
+        <p>Here is what's happening at your school today. Keep track of students, teachers, and academic activities in real-time.</p>
+    </div>
+    <i class="bi bi-mortarboard welcome-banner-icon"></i>
+</div>
+
+<!-- Stats Row -->
+<div class="stats-row mb-4">
+    <div class="stat-item animate-fade-in-up delay-1">
+        <div class="stat-item-header">
+            <div class="stat-item-icon primary">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <span class="stats-card-trend up">
+                <i class="bi bi-arrow-up"></i> 12%
+            </span>
+        </div>
+        <div class="stat-item-value">{{ students_count|default:"0" }}</div>
+        <div class="stat-item-label">Total Students</div>
+    </div>
+
+    <div class="stat-item animate-fade-in-up delay-2">
+        <div class="stat-item-header">
+            <div class="stat-item-icon success">
+                <i class="bi bi-person-video3"></i>
+            </div>
+            <span class="stats-card-trend up">
+                <i class="bi bi-arrow-up"></i> 5%
+            </span>
+        </div>
+        <div class="stat-item-value">{{ teachers_count|default:"0" }}</div>
+        <div class="stat-item-label">Total Teachers</div>
+    </div>
+
+    <div class="stat-item animate-fade-in-up delay-3">
+        <div class="stat-item-header">
+            <div class="stat-item-icon warning">
+                <i class="bi bi-building"></i>
+            </div>
+        </div>
+        <div class="stat-item-value">{{ classes_count|default:"0" }}</div>
+        <div class="stat-item-label">Total Classes</div>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stats-card animate-fade-in-up delay-1">
+        <div class="stats-card-header">
+            <div class="stats-card-icon primary"><i class="bi bi-people-fill"></i></div>
+            <span class="stats-card-trend up">
+                <i class="bi bi-arrow-up"></i> 12%
+            </span>
+        </div>
+        <div class="stats-card-label">Total Students</div>
+        <h3 class="stats-card-value">{{ students_count|default:"0" }}</h3>
+        <div class="stats-card-footer">
+            <a href="{% url 'student_list' %}">View all students →</a>
+        </div>
+    </div>
+
+    <div class="stats-card animate-fade-in-up delay-2">
+        <div class="stats-card-header">
+            <div class="stats-card-icon success"><i class="bi bi-person-video3"></i></div>
+            <span class="stats-card-trend up">
+                <i class="bi bi-arrow-up"></i> 5%
+            </span>
+        </div>
+        <div class="stats-card-label">Total Teachers</div>
+        <h3 class="stats-card-value">{{ teachers_count|default:"0" }}</h3>
+        <div class="stats-card-footer">
+            <a href="{% url 'teacher_list' %}">View all teachers →</a>
+        </div>
+    </div>
+
+    <div class="stats-card animate-fade-in-up delay-3">
+        <div class="stats-card-header">
+            <div class="stats-card-icon warning"><i class="bi bi-building"></i></div>
+        </div>
+        <div class="stats-card-label">Total Classes</div>
+        <h3 class="stats-card-value">{{ classes_count|default:"0" }}</h3>
+        <div class="stats-card-footer">
+            <a href="{% url 'class_list' %}">View all classes →</a>
+        </div>
+    </div>
+
+    <div class="stats-card animate-fade-in-up delay-4">
+        <div class="stats-card-header">
+            <div class="stats-card-icon info"><i class="bi bi-calendar-check-fill"></i></div>
+        </div>
+        <div class="stats-card-label">Attendance Today</div>
+        <h3 class="stats-card-value">{{ attendance_percentage|default:"N/A" }}</h3>
+        <div class="stats-card-footer">
+            <a href="{% url 'attendance_list' %}">View attendance →</a>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card card-accent card-accent-primary mb-4">
+    <div class="card-header bg-white py-3 border-0">
+        <h5 class="card-header-title">Quick Actions</h5>
+    </div>
+    <div class="card-body pt-0">
+        <div class="quick-actions">
+            <a href="{% url 'student_create' %}" class="quick-action-item">
+                <div class="quick-action-icon"><i class="bi bi-person-plus"></i></div>
+                <span class="quick-action-label">Add Student</span>
+            </a>
+            <a href="{% url 'teacher_create' %}" class="quick-action-item">
+                <div class="quick-action-icon"><i class="bi bi-person-video3"></i></div>
+                <span class="quick-action-label">Add Teacher</span>
+            </a>
+            <a href="{% url 'class_create' %}" class="quick-action-item">
+                <div class="quick-action-icon"><i class="bi bi-building-add"></i></div>
+                <span class="quick-action-label">Add Class</span>
+            </a>
+            <a href="{% url 'mark_attendance' %}" class="quick-action-item">
+                <div class="quick-action-icon"><i class="bi bi-calendar-check"></i></div>
+                <span class="quick-action-label">Mark Attendance</span>
+            </a>
+            <a href="{% url 'fee_category_list' %}" class="quick-action-item">
+                <div class="quick-action-icon"><i class="bi bi-credit-card"></i></div>
+                <span class="quick-action-label">Collect Fee</span>
+            </a>
+            <a href="{% url 'announcement_create' %}" class="quick-action-item">
+                <div class="quick-action-icon"><i class="bi bi-megaphone"></i></div>
+                <span class="quick-action-label">Announcement</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Dashboard Grid: Activity + Announcements -->
+<div class="dashboard-row dashboard-grid-2">
+    <!-- Recent Activity -->
+    <div class="card h-100">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+            <h5 class="card-header-title">Recent Activity Logs</h5>
+            <a href="#" class="btn btn-ghost btn-sm">View All</a>
+        </div>
+        <div class="card-body pt-0">
+            {% if activity_logs %}
+                <ul class="activity-feed">
+                    {% for log in activity_logs|slice:":10" %}
+                        <li class="activity-feed-item">
+                            <div class="activity-feed-icon primary"><i class="bi bi-person"></i></div>
+                            <div class="activity-feed-content">
+                                <div class="activity-feed-text">
+                                    <strong>{{ log.user.get_full_name }}</strong> {{ log.description }}
+                                </div>
+                                <div class="activity-feed-time">{{ log.created_at|timesince }} ago</div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="bi bi-journal-x"></i></div>
+                    <h6 class="empty-state-title">No recent activity</h6>
+                    <p class="empty-state-description">Activity logs will appear here as actions are performed across the system.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Latest Announcements -->
+    <div class="card h-100">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+            <h5 class="card-header-title">Latest Announcements</h5>
+            <a href="{% url 'announcement_list' %}" class="btn btn-ghost btn-sm">View All</a>
+        </div>
+        <div class="card-body pt-0">
+            {% if announcements %}
+                {% for announcement in announcements|slice:":5" %}
+                    <div class="announcement-card">
+                        <div class="announcement-card-header">
+                            <h6 class="announcement-card-title">{{ announcement.title }}</h6>
+                            <span class="announcement-card-date">{{ announcement.created_at|date:"M d" }}</span>
+                        </div>
+                        <p class="announcement-card-text">{{ announcement.content|truncatechars:100 }}</p>
+                        <div class="announcement-card-author">By {{ announcement.published_by.get_full_name|default:"Admin" }}</div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="bi bi-megaphone"></i></div>
+                    <h6 class="empty-state-title">No announcements yet</h6>
+                    <p class="empty-state-description">Post an announcement to keep everyone informed.</p>
+                    <a href="{% url 'announcement_create' %}" class="btn btn-primary btn-sm">Create Announcement</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

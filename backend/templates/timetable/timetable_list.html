@@ -1,0 +1,61 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Timetable - EduCore SMS{% endblock %}
+{% block page_title %}Timetable Management{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div><p class="text-muted mb-0">Manage class schedules</p></div>
+    <a href="{% url 'timetable_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Entry</a>
+</div>
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <select name="class_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Classes</option>
+                    {% for c in classes %}<option value="{{ c.pk }}" {% if request.GET.class_id == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="day" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Days</option>
+                    {% for val, label in days %}<option value="{{ val }}" {% if request.GET.day == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="teacher_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Teachers</option>
+                    {% for t in teachers %}<option value="{{ t.pk }}" {% if request.GET.teacher_id == t.pk|stringformat:"s" %}selected{% endif %}>{{ t.user.get_full_name }}</option>{% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table data-table table-hover mb-0">
+                <thead><tr><th>Class</th><th>Section</th><th>Day</th><th>Period</th><th>Subject</th><th>Teacher</th><th>Room</th><th class="text-end">Actions</th></tr></thead>
+                <tbody>
+                    {% for e in entries %}
+                    <tr>
+                        <td class="fw-semibold">{{ e.school_class.name }}</td>
+                        <td>{{ e.section.name }}</td>
+                        <td>{{ e.get_day_of_week_display }}</td>
+                        <td>{{ e.period.name }} <small class="text-muted">{{ e.period.start_time|time:"H:i" }} - {{ e.period.end_time|time:"H:i" }}</small></td>
+                        <td>{{ e.subject.name }}</td>
+                        <td>{{ e.teacher.user.get_full_name }}</td>
+                        <td>{{ e.room_number|default:"—" }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'timetable_update' e.pk %}" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'timetable_delete' e.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="text-center py-5"><p class="text-muted mb-2">No timetable entries found.</p><a href="{% url 'timetable_create' %}" class="btn btn-primary">Add First Entry</a></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

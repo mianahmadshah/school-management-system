@@ -1,0 +1,48 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Fee Structures - EduCore SMS{% endblock %}
+{% block page_title %}Fee Structures{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div><p class="text-muted mb-0">Manage fee structures per class</p></div>
+    <a href="{% url 'fee_structure_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Structure</a>
+</div>
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <select name="class_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Classes</option>
+                    {% for class in classes %}<option value="{{ class.pk }}" {% if request.GET.class_id == class.pk|stringformat:"s" %}selected{% endif %}>{{ class.name }}</option>{% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table data-table table-hover mb-0">
+                <thead><tr><th>Class</th><th>Category</th><th>Academic Year</th><th>Amount</th><th>Due Date</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                <tbody>
+                    {% for s in structures %}
+                    <tr>
+                        <td class="fw-semibold">{{ s.school_class.name }}</td>
+                        <td>{{ s.category.name }}</td>
+                        <td>{{ s.academic_year }}</td>
+                        <td>{{ s.amount }}</td>
+                        <td>{{ s.due_date }}</td>
+                        <td>{% if s.is_active %}<span class="badge badge-success-subtle">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</td>
+                        <td class="text-end">
+                            <a href="#" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
+                            <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center py-5"><p class="text-muted mb-2">No structures found.</p><a href="{% url 'fee_structure_create' %}" class="btn btn-primary">Add First Structure</a></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

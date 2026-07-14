@@ -1,0 +1,26 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}My Timetable - EduCore SMS{% endblock %}
+{% block page_title %}My Timetable{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Period</th>
+                        {% for val, label in day_choices %}
+                        <th>{{ label }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for period in entries|dictsort:"period__order" %}
+                        {% comment %}Build rows per unique period{% endcomment %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ teacher.full_name }} Profile - EduCore SMS{% endblock %}
+{% block page_title %}Teacher Details{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'teacher_list' %}" class="btn btn-light border btn-sm"><i class="bi bi-arrow-left me-1"></i> Back to Teacher Directory</a>
+</div>
+
+<div class="row">
+    <!-- Left Column - Profile Picture & Overview -->
+    <div class="col-lg-4 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="position-relative mb-4">
+                    {% if teacher.photo %}
+                        <img src="{{ teacher.photo.url }}" alt="Profile Picture" class="rounded-circle border border-success border-3 img-thumbnail shadow-sm" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center border border-success border-3 shadow-sm mx-auto" style="width: 150px; height: 150px; font-size: 4rem; font-weight: 700;">
+                            {{ teacher.user.first_name|slice:":1"|upper }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <h4 class="fw-bold text-dark mb-1">{{ teacher.full_name }}</h4>
+                <p class="text-muted text-sm mb-3">Employee ID: <span class="fw-bold">{{ teacher.employee_id }}</span></p>
+                
+                <span class="badge {% if teacher.status == 'ACTIVE' %}badge-success-subtle{% else %}badge-danger-subtle{% endif %} px-3 py-2 rounded-pill fw-semibold mb-4" style="font-size: 0.8rem;">
+                    {{ teacher.status }}
+                </span>
+
+                <div class="w-100 border-top pt-3 text-start">
+                    <div class="mb-2">
+                        <small class="text-secondary fw-semibold">Department</small>
+                        <p class="m-0 text-dark fw-bold">{{ teacher.department|default:"—" }}</p>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-secondary fw-semibold">Designation</small>
+                        <p class="m-0 text-dark">{{ teacher.designation|default:"—" }}</p>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-secondary fw-semibold">Joining Date</small>
+                        <p class="m-0 text-dark">{{ teacher.joining_date|date:"F d, Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column - Teacher Info Tabs -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0">
+                <ul class="nav nav-tabs card-header-tabs" id="profileTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active fw-semibold text-secondary" id="professional-tab" data-bs-toggle="tab" data-bs-target="#professional" type="button" role="tab" aria-controls="professional" aria-selected="true">Professional Info</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link fw-semibold text-secondary" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" aria-controls="personal" aria-selected="false">Personal Info</button>
+                    </li>
+                    {% if request.user.role == 'ADMIN' %}
+                        <li class="nav-item">
+                            <button class="nav-link fw-semibold text-secondary" id="payroll-tab" data-bs-toggle="tab" data-bs-target="#payroll" type="button" role="tab" aria-controls="payroll" aria-selected="false">Payroll & Bank</button>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            <div class="card-body p-4 tab-content" id="profileTabsContent">
+                <!-- Tab: Professional Info -->
+                <div class="tab-pane fade show active" id="professional" role="tabpanel" aria-labelledby="professional-tab">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Highest Qualification</small>
+                            <span class="text-dark fw-medium">{{ teacher.highest_qualification|default:"—" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Specialization</small>
+                            <span class="text-dark">{{ teacher.specialization|default:"—" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Employment Type</small>
+                            <span class="text-dark">{{ teacher.get_employment_type_display }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Teaching Experience</small>
+                            <span class="text-dark">{{ teacher.experience_years }} Year(s)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Personal Info -->
+                <div class="tab-pane fade" id="personal" role="tabpanel" aria-labelledby="personal-tab">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Email Address</small>
+                            <span class="text-dark">{{ teacher.email }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Phone Number</small>
+                            <span class="text-dark">{{ teacher.phone|default:"—" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Gender</small>
+                            <span class="text-dark text-capitalize">{{ teacher.gender|lower|default:"—" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Date of Birth</small>
+                            <span class="text-dark">{{ teacher.date_of_birth|date:"F d, Y"|default:"—" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Religion</small>
+                            <span class="text-dark">{{ teacher.religion|default:"—" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-secondary fw-semibold d-block">Nationality</small>
+                            <span class="text-dark">{{ teacher.nationality }}</span>
+                        </div>
+                        <div class="col-12 border-top pt-3">
+                            <small class="text-secondary fw-semibold d-block">Residential Address</small>
+                            <span class="text-dark">{{ teacher.address|default:"—" }}</span>
+                        </div>
+                        <div class="col-md-6 border-top pt-3">
+                            <small class="text-secondary fw-semibold d-block text-danger">Emergency Contact Number</small>
+                            <span class="text-dark fw-bold">{{ teacher.emergency_contact|default:"—" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Payroll & Bank -->
+                {% if request.user.role == 'ADMIN' %}
+                    <div class="tab-pane fade" id="payroll" role="tabpanel" aria-labelledby="payroll-tab">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <small class="text-secondary fw-semibold d-block">Monthly Salary</small>
+                                <span class="text-dark fw-bold">PKR {{ teacher.salary|default:"0.00" }}</span>
+                            </div>
+                            <div class="col-md-6"></div>
+                            
+                            <div class="col-md-6 border-top pt-3">
+                                <small class="text-secondary fw-semibold d-block">Bank Name</small>
+                                <span class="text-dark">{{ teacher.bank_name|default:"—" }}</span>
+                            </div>
+                            <div class="col-md-6 border-top pt-3">
+                                <small class="text-secondary fw-semibold d-block">Bank Account Number</small>
+                                <span class="text-dark">{{ teacher.bank_account_number|default:"—" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

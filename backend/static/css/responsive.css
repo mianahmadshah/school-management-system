@@ -1,0 +1,158 @@
+/*
+  responsive.css - Responsive adjustments
+  Premium SaaS Design System
+  Note: Most responsive styles are inline in their respective CSS files.
+  This file contains only global responsive overrides.
+*/
+
+/* ===== Extra Large Screens (1400px+) ===== */
+@media (min-width: 1400px) {
+  .container {
+    max-width: 1320px;
+  }
+}
+
+/* ===== Large Screens (1200px - 1399px) ===== */
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+  .container {
+    max-width: 1140px;
+  }
+}
+
+/* ===== Print ===== */
+@media print {
+  .sidebar,
+  .top-header,
+  .mobile-toggle,
+  .sidebar-overlay,
+  .no-print {
+    display: none !important;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+
+  .card,
+  .table-container,
+  .form-card {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+
+  body {
+    background: white !important;
+    font-size: 11pt !important;
+  }
+
+  a[href]::after {
+    content: none !important;
+  }
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== Dark Mode (if implemented) ===== */
+@media (prefers-color-scheme: dark) {
+  /* Placeholder for potential future dark mode */
+}
+
+/* ===== Tablet Devices (768px - 1024px) ===== */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .container {
+    max-width: 95%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .dashboard-grid-2-1,
+  .dashboard-grid-1-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Large Mobile Devices (414px - 767px) ===== */
+@media (min-width: 414px) and (max-width: 767.98px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .dashboard-grid-2 {
+    grid-template-columns: 1fr;
+  }
+  
+  .sidebar {
+    width: 260px;
+  }
+}
+
+/* ===== Small Mobile Devices (320px - 413px) ===== */
+@media (max-width: 413px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-card {
+    padding: 1rem;
+  }
+  
+  .stats-card-value {
+    font-size: var(--font-xl);
+  }
+}
+
+/* ===== Landscape Mobile ===== */
+@media (max-width: 767.98px) and (orientation: landscape) {
+  .top-header {
+    height: 56px;
+    padding: 0 0.75rem;
+  }
+  
+  .header-title {
+    font-size: var(--font-lg);
+  }
+  
+  .page-content {
+    padding: 0.75rem;
+  }
+  
+  .auth-brand {
+    padding: 2rem;
+  }
+  
+  .auth-hero h1 {
+    font-size: 2rem;
+  }
+}
+
+/* ===== Print Landscape ===== */
+@media print and (orientation: landscape) {
+  .dashboard-grid-2,
+  .dashboard-grid-2-1,
+  .dashboard-grid-1-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ===== High DPI Displays ===== */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .sidebar-brand,
+  .header-profile-avatar,
+  .stats-card-icon {
+    image-rendering: -webkit-optimize-contrast;
+  }
+}

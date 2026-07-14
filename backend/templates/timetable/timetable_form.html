@@ -1,0 +1,29 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{% if form.instance.pk %}Edit{% else %}Add{% endif %} Timetable Entry - EduCore SMS{% endblock %}
+{% block page_title %}{% if form.instance.pk %}Edit Timetable Entry{% else %}Add Timetable Entry{% endif %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" novalidate>{% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Class <span class="text-danger">*</span></label>{{ form.school_class }}{% if form.school_class.errors %}<div class="text-danger small">{{ form.school_class.errors }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Section <span class="text-danger">*</span></label>{{ form.section }}{% if form.section.errors %}<div class="text-danger small">{{ form.section.errors }}</div>{% endif %}</div>
+                        <div class="col-md-4"><label class="form-label">Day <span class="text-danger">*</span></label>{{ form.day_of_week }}{% if form.day_of_week.errors %}<div class="text-danger small">{{ form.day_of_week.errors }}</div>{% endif %}</div>
+                        <div class="col-md-4"><label class="form-label">Period <span class="text-danger">*</span></label>{{ form.period }}{% if form.period.errors %}<div class="text-danger small">{{ form.period.errors }}</div>{% endif %}</div>
+                        <div class="col-md-4"><label class="form-label">Teacher <span class="text-danger">*</span></label>{{ form.teacher }}{% if form.teacher.errors %}<div class="text-danger small">{{ form.teacher.errors }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Subject <span class="text-danger">*</span></label>{{ form.subject }}{% if form.subject.errors %}<div class="text-danger small">{{ form.subject.errors }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Room Number</label>{{ form.room_number }}{% if form.room_number.errors %}<div class="text-danger small">{{ form.room_number.errors }}</div>{% endif %}</div>
+                    </div>
+                    <hr class="my-4">
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'timetable_list' %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">{% if form.instance.pk %}Update{% else %}Create{% endif %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Attendance Records - EduCore SMS{% endblock %}
+{% block page_title %}Attendance Records{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Attendance Records</h2>
+        <p class="page-header-subtitle">View and manage daily attendance records</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'mark_attendance' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Mark Attendance
+        </a>
+    </div>
+</div>
+
+<!-- Filter Card -->
+<div class="filter-bar">
+    <form method="GET" class="row g-3">
+        <div class="col-md-3">
+            <label class="form-label">Date</label>
+            <input type="date" name="date" class="form-control" value="{{ request.GET.date|default:today.isoformat }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Class</label>
+            <select name="class_id" class="form-select">
+                <option value="">All Classes</option>
+                {% for class in classes %}
+                    <option value="{{ class.pk }}" {% if request.GET.class_id == class.pk|stringformat:"s" %}selected{% endif %}>{{ class.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Section</label>
+            <select name="section_id" class="form-select">
+                <option value="">All Sections</option>
+                {% for section in sections %}
+                    <option value="{{ section.pk }}" {% if request.GET.section_id == section.pk|stringformat:"s" %}selected{% endif %}>{{ section.school_class.name }} - {{ section.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-select">
+                <option value="">All Status</option>
+                <option value="PRESENT" {% if request.GET.status == 'PRESENT' %}selected{% endif %}>Present</option>
+                <option value="ABSENT" {% if request.GET.status == 'ABSENT' %}selected{% endif %}>Absent</option>
+                <option value="LATE" {% if request.GET.status == 'LATE' %}selected{% endif %}>Late</option>
+                <option value="HALF_DAY" {% if request.GET.status == 'HALF_DAY' %}selected{% endif %}>Half Day</option>
+                <option value="LEAVE" {% if request.GET.status == 'LEAVE' %}selected{% endif %}>On Leave</option>
+            </select>
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filter</button>
+            <a href="{% url 'attendance_list' %}" class="btn btn-outline-secondary">Reset</a>
+        </div>
+    </form>
+</div>
+
+<!-- Attendance Table -->
+<div class="table-container">
+    <div class="table-header">
+        <div class="table-header-left">
+            <h5 class="table-title">Attendance Records</h5>
+            <span class="table-subtitle">{{ records|length }} record{{ records|length|pluralize }}</span>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Class</th>
+                    <th>Section</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                    <th>Marked By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td class="fw-semibold">{{ record.student.full_name }}</td>
+                    <td>{{ record.school_class.name }}</td>
+                    <td>{{ record.section.name }}</td>
+                    <td>{{ record.date|date:"d M Y" }}</td>
+                    <td>
+                        {% if record.status == 'PRESENT' %}
+                            <span class="badge-status badge-status-active">Present</span>
+                        {% elif record.status == 'ABSENT' %}
+                            <span class="badge-status badge-status-inactive">Absent</span>
+                        {% elif record.status == 'LATE' %}
+                            <span class="badge-status badge-status-pending">Late</span>
+                        {% elif record.status == 'HALF_DAY' %}
+                            <span class="badge badge-info">Half Day</span>
+                        {% elif record.status == 'LEAVE' %}
+                            <span class="badge badge-secondary">On Leave</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ record.remarks|default:"—" }}</td>
+                    <td><small style="color: var(--color-text-tertiary);">{{ record.marked_by.get_full_name|default:record.marked_by.email }}</small></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">
+                        <div class="table-empty">
+                            <div class="table-empty-icon"><i class="bi bi-calendar-check"></i></div>
+                            <p class="table-empty-text">No attendance records found</p>
+                            <p class="table-empty-subtext">No records match the selected filters.</p>
+                            <a href="{% url 'mark_attendance' %}" class="btn btn-primary btn-sm">Mark Attendance</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if is_paginated %}
+    <div class="table-footer">
+        <div class="table-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+        <div class="table-actions">
+            <nav><ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page=1{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}{% if request.GET.class_id %}&class_id={{ request.GET.class_id }}{% endif %}{% if request.GET.section_id %}&section_id={{ request.GET.section_id }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}{% if request.GET.class_id %}&class_id={{ request.GET.class_id }}{% endif %}{% if request.GET.section_id %}&section_id={{ request.GET.section_id }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"><i class="bi bi-chevron-left"></i></a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}{% if request.GET.class_id %}&class_id={{ request.GET.class_id }}{% endif %}{% if request.GET.section_id %}&section_id={{ request.GET.section_id }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"><i class="bi bi-chevron-right"></i></a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}{% if request.GET.class_id %}&class_id={{ request.GET.class_id }}{% endif %}{% if request.GET.section_id %}&section_id={{ request.GET.section_id }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a></li>
+                {% endif %}
+            </ul></nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

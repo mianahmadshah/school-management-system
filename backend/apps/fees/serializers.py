@@ -2,14 +2,25 @@
 Serializers for the fees and finance app.
 """
 from rest_framework import serializers
-from .models import FeeCategory, FeeInvoice, FeePayment
+from .models import FeeCategory, FeeStructure, FeeInvoice, FeePayment
 from apps.students.models import Student
+from apps.classes.models import Class
 
 
 class FeeCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = FeeCategory
         fields = ['id', 'name', 'description', 'default_amount', 'is_active', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class FeeStructureSerializer(serializers.ModelSerializer):
+    class_name = serializers.CharField(source='school_class.name', read_only=True)
+    category_name = serializers.CharField(source='category.name', read_only=True)
+
+    class Meta:
+        model = FeeStructure
+        fields = ['id', 'school_class', 'class_name', 'category', 'category_name', 'academic_year', 'amount', 'due_date', 'is_active', 'created_at']
         read_only_fields = ['id', 'created_at']
 
 

@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Subjects - EduCore SMS{% endblock %}
+{% block page_title %}Subject Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Subject Management</h2>
+        <p class="page-header-subtitle">Manage all academic subjects offered in each class</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'enrollment_create' %}" class="btn btn-outline-primary">
+            <i class="bi bi-person-plus"></i> Enroll Student
+        </a>
+        <a href="{% url 'subject_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add Subject
+        </a>
+    </div>
+</div>
+
+<!-- Search & Filter -->
+<div class="filter-bar">
+    <form method="GET" class="row g-3">
+        <div class="col-md-4">
+            <div class="input-icon-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" class="form-control" placeholder="Search subjects..." value="{{ request.GET.q }}">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select name="class_id" class="form-select" onchange="this.form.submit()">
+                <option value="">All Classes</option>
+                {% for class in classes %}
+                    <option value="{{ class.pk }}" {% if request.GET.class_id == class.pk|stringformat:"s" %}selected{% endif %}>{{ class.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-auto d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Search</button>
+            {% if request.GET.q or request.GET.class_id %}
+                <a href="{% url 'subject_list' %}" class="btn btn-outline-secondary">Clear</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Subjects Table -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table data-table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Subject Name</th>
+                        <th>Code</th>
+                        <th>Class</th>
+                        <th>Teacher</th>
+                        <th>Type</th>
+                        <th>Credits</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subject in subjects %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'subject_detail' subject.pk %}" class="text-decoration-none fw-semibold">
+                                {{ subject.name }}
+                            </a>
+                        </td>
+                        <td><code>{{ subject.code }}</code></td>
+                        <td>{{ subject.school_class.name }}</td>
+                        <td>
+                            {% if subject.teacher %}
+                                {{ subject.teacher.full_name }}
+                            {% else %}
+                                <span class="text-muted">Not assigned</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-light text-dark">{{ subject.get_subject_type_display }}</span></td>
+                        <td>{{ subject.credits }}</td>
+                        <td>
+                            {% if subject.is_active %}
+                                <span class="badge badge-success-subtle">Active</span>
+                            {% else %}
+                                <span class="badge badge-danger-subtle">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'subject_detail' subject.pk %}" class="btn btn-sm btn-outline-info" title="View">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'subject_update' subject.pk %}" class="btn btn-sm btn-outline-warning" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'subject_delete' subject.pk %}" class="btn btn-sm btn-outline-danger" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            <i class="bi bi-book fs-1 text-muted d-block mb-2"></i>
+                            <p class="text-muted mb-0">No subjects found.</p>
+                            <a href="{% url 'subject_create' %}" class="btn btn-primary mt-3">Add First Subject</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.class_id %}&class_id={{ request.GET.class_id }}{% endif %}">First</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.class_id %}&class_id={{ request.GET.class_id }}{% endif %}">Previous</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.class_id %}&class_id={{ request.GET.class_id }}{% endif %}">Next</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.class_id %}&class_id={{ request.GET.class_id }}{% endif %}">Last</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

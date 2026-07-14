@@ -1,0 +1,51 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Fee Collection Report - EduCore SMS{% endblock %}
+{% block page_title %}Fee Collection Report{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div><p class="text-muted mb-0">Fee collection analytics by class</p></div>
+    <a href="{% url 'report_dashboard' %}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back to Reports</a>
+</div>
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Class</label>
+                <select name="class_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Classes</option>
+                    {% for c in classes %}<option value="{{ c.pk }}" {% if request.GET.class_id == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">From Date</label>
+                <input type="date" name="from_date" class="form-control" value="{{ request.GET.from_date }}" onchange="this.form.submit()">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">To Date</label>
+                <input type="date" name="to_date" class="form-control" value="{{ request.GET.to_date }}" onchange="this.form.submit()">
+            </div>
+        </form>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table data-table table-hover mb-0">
+                <thead><tr><th>Class</th><th>Total Amount</th><th>Total Paid</th><th>Total Due</th></tr></thead>
+                <tbody>
+                    {% for row in report_data %}
+                    <tr>
+                        <td class="fw-semibold">{{ row.class }}</td>
+                        <td>{{ row.total_amount }}</td>
+                        <td class="text-success">{{ row.total_paid }}</td>
+                        <td class="text-danger">{{ row.total_due }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center py-5 text-muted">No fee data found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

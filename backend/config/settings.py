@@ -62,6 +62,7 @@ LOCAL_APPS = [
     'apps.announcements',
     'apps.assignments',
     'apps.timetable',
+    'apps.reports',
     'apps.activity_logs',
 ]
 
@@ -80,7 +81,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'config.middleware.PerformanceMiddleware',        # Performance monitoring
+    'config.middleware.ETagMiddleware',               # ETag caching support
 ]
+
 
 ROOT_URLCONF = 'config.urls'
 
@@ -142,6 +146,9 @@ USE_TZ = True
 # ─────────────────────────────────────────────────────────────
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 MEDIA_URL = env('MEDIA_URL', default='/media/')
 MEDIA_ROOT = BASE_DIR / env('MEDIA_ROOT', default='media')
@@ -226,3 +233,20 @@ CORS_ALLOW_CREDENTIALS = True   # Allow cookies/auth headers cross-origin
 # ─────────────────────────────────────────────────────────────
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024   # 5MB max file size
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
+
+# ─────────────────────────────────────────────────────────────
+# EMAIL SETTINGS
+# ─────────────────────────────────────────────────────────────
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'support@educore.edu'
+
+# ─────────────────────────────────────────────────────────────
+# AUTHENTICATION REDIRECTS (Web UI / Django Templates)
+# LoginRequiredMixin uses LOGIN_URL to redirect unauthenticated users.
+# Our login page lives at /login/ (not Django's default /accounts/login/).
+# ─────────────────────────────────────────────────────────────
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'dashboard_redirect'
+LOGOUT_REDIRECT_URL = 'login'
+
+

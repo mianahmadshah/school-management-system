@@ -1,0 +1,30 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Create Invoice - EduCore SMS{% endblock %}
+{% block page_title %}Create Invoice{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" novalidate>{% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Student <span class="text-danger">*</span></label>{{ form.student }}{% if form.student.errors %}<div class="text-danger small">{{ form.student.errors }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Academic Year <span class="text-danger">*</span></label>{{ form.academic_year }}{% if form.academic_year.errors %}<div class="text-danger small">{{ form.academic_year.errors }}</div>{% endif %}</div>
+                        <div class="col-md-6"><label class="form-label">Invoice #</label>{{ form.invoice_number }}</div>
+                        <div class="col-md-6"><label class="form-label">Category</label>{{ form.category }}</div>
+                        <div class="col-md-4"><label class="form-label">Issue Date</label>{{ form.issue_date }}</div>
+                        <div class="col-md-4"><label class="form-label">Due Date</label>{{ form.due_date }}{% if form.due_date.errors %}<div class="text-danger small">{{ form.due_date.errors }}</div>{% endif %}</div>
+                        <div class="col-md-4"><label class="form-label">Total Amount <span class="text-danger">*</span></label>{{ form.total_amount }}{% if form.total_amount.errors %}<div class="text-danger small">{{ form.total_amount.errors }}</div>{% endif %}</div>
+                        <div class="col-12"><label class="form-label">Remarks</label>{{ form.remarks }}</div>
+                    </div>
+                    <hr class="my-4">
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'invoice_list' %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Create Invoice</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

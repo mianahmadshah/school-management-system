@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Fee Categories - EduCore SMS{% endblock %}
+{% block page_title %}Fee Categories{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div><p class="text-muted mb-0">Configure fee categories</p></div>
+    <a href="{% url 'fee_category_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Category</a>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table data-table table-hover mb-0">
+                <thead><tr><th>Name</th><th>Code</th><th>Default Amount</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                <tbody>
+                    {% for cat in categories %}
+                    <tr>
+                        <td class="fw-semibold">{{ cat.name }}</td>
+                        <td><span class="badge bg-light text-dark">{{ cat.code }}</span></td>
+                        <td>${{ cat.default_amount }}</td>
+                        <td>{% if cat.is_active %}<span class="badge badge-success-subtle">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</td>
+                        <td class="text-end">
+                            <a href="{% url 'fee_category_update' cat.pk %}" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'fee_category_delete' cat.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center py-5"><p class="text-muted mb-2">No categories found.</p><a href="{% url 'fee_category_create' %}" class="btn btn-primary">Add First Category</a></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

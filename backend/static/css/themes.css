@@ -1,0 +1,212 @@
+/*
+  themes.css - Theme variations and color schemes
+  Premium SaaS Design System
+*/
+
+/* ===== Dark Theme ===== */
+[data-theme="dark"] {
+  --color-primary: #3B82F6;
+  --color-primary-hover: #2563EB;
+  --color-primary-light: #1E3A5F;
+  --color-primary-lighter: #1E40AF;
+  --color-accent: #60A5FA;
+  --color-background: #0F172A;
+  --color-surface: #1E293B;
+  --color-surface-hover: #334155;
+  --color-text-primary: #F1F5F9;
+  --color-text-secondary: #94A3B8;
+  --color-text-tertiary: #64748B;
+  --color-border: #334155;
+  --color-border-light: #1E293B;
+  --color-success-bg: #064E3B;
+  --color-success-border: #065F46;
+  --color-warning-bg: #78350F;
+  --color-warning-border: #92400E;
+  --color-danger-bg: #450A0A;
+  --color-danger-border: #7F1D1D;
+  --color-info-bg: #164E63;
+  --color-info-border: #155E75;
+  --color-hover: #1E293B;
+  --color-active: #334155;
+  --color-sidebar-active: #1E3A5F;
+  --gradient-primary: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  --gradient-accent: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* ===== Blue Theme ===== */
+[data-theme="blue"] {
+  --color-primary: #2563EB;
+  --color-primary-hover: #1D4ED8;
+  --color-accent: #3B82F6;
+  --gradient-primary: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+}
+
+/* ===== Green Theme ===== */
+[data-theme="green"] {
+  --color-primary: #22C55E;
+  --color-primary-hover: #16A34A;
+  --color-accent: #22C55E;
+  --gradient-primary: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+}
+
+/* ===== Purple Theme ===== */
+[data-theme="purple"] {
+  --color-primary: #A855F7;
+  --color-primary-hover: #9333EA;
+  --color-accent: #A855F7;
+  --gradient-primary: linear-gradient(135deg, #A855F7 0%, #7C3AED 100%);
+}
+
+/* ===== Orange Theme ===== */
+[data-theme="orange"] {
+  --color-primary: #F97316;
+  --color-primary-hover: #EA580C;
+  --color-accent: #F97316;
+  --gradient-primary: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+}
+
+/* ===== Pink Theme ===== */
+[data-theme="pink"] {
+  --color-primary: #EC4899;
+  --color-primary-hover: #DB2777;
+  --color-accent: #EC4899;
+  --gradient-primary: linear-gradient(135deg, #EC4899 0%, #DB2777 100%);
+}
+
+/* ===== Red Theme ===== */
+[data-theme="red"] {
+  --color-primary: #EF4444;
+  --color-primary-hover: #DC2626;
+  --color-accent: #EF4444;
+  --gradient-primary: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+}
+
+/* ===== Teal Theme ===== */
+[data-theme="teal"] {
+  --color-primary: #14B8A6;
+  --color-primary-hover: #0D9488;
+  --color-accent: #14B8A6;
+  --gradient-primary: linear-gradient(135deg, #14B8A6 0%, #0D9488 100%);
+}
+
+/* ===== Indigo Theme ===== */
+[data-theme="indigo"] {
+  --color-primary: #6366F1;
+  --color-primary-hover: #4F46E5;
+  --color-accent: #6366F1;
+  --gradient-primary: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+}
+
+/* ===== Sidebar Themes ===== */
+[data-sidebar="dark"] .sidebar {
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+}
+
+[data-sidebar="dark"] .sidebar-brand-text h5 { color: #F1F5F9; }
+[data-sidebar="dark"] .sidebar-brand-text small { color: #94A3B8; }
+[data-sidebar="dark"] .sidebar-nav-link { color: #94A3B8; }
+[data-sidebar="dark"] .sidebar-nav-link:hover { color: #F1F5F9; background: rgba(255,255,255,0.05); }
+[data-sidebar="dark"] .sidebar-nav-link.active { background: rgba(59, 130, 246, 0.2); color: #60A5FA; }
+[data-sidebar="dark"] .sidebar-nav-link.active i { color: #60A5FA; }
+[data-sidebar="dark"] .sidebar-user-info p { color: #F1F5F9; }
+[data-sidebar="dark"] .sidebar-user-info small { color: #94A3B8; }
+[data-sidebar="dark"] .sidebar-logout { border-color: #334155; color: #94A3B8; }
+[data-sidebar="dark"] .sidebar-logout:hover { background: rgba(239,68,68,0.1); border-color: #EF4444; color: #EF4444; }
+
+/* ===== Compact Mode ===== */
+[data-mode="compact"] {
+  --sidebar-width: 72px;
+}
+
+[data-mode="compact"] .sidebar-brand-text,
+[data-mode="compact"] .sidebar-nav-link span,
+[data-mode="compact"] .sidebar-user-info,
+[data-mode="compact"] .sidebar-logout span {
+  display: none;
+}
+
+[data-mode="compact"] .sidebar-nav-link {
+  justify-content: center;
+  padding: 0.625rem;
+}
+
+[data-mode="compact"] .sidebar-nav-link i {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+[data-mode="compact"] .sidebar-header {
+  justify-content: center;
+  padding: 1.25rem 0.5rem;
+}
+
+[data-mode="compact"] .sidebar-user {
+  justify-content: center;
+}
+
+[data-mode="compact"] .main-content {
+  margin-left: calc(72px + var(--sidebar-offset) + var(--content-gap));
+}
+
+/* ===== RTL Support ===== */
+[dir="rtl"] {
+  direction: rtl;
+}
+
+[dir="rtl"] .sidebar {
+  left: auto;
+  right: var(--sidebar-offset);
+}
+
+[dir="rtl"] .main-content {
+  margin-left: 0;
+  margin-right: calc(var(--sidebar-width) + var(--sidebar-offset) + var(--content-gap));
+}
+
+[dir="rtl"] .header-search input {
+  padding-right: 2.25rem;
+  padding-left: 1rem;
+}
+
+[dir="rtl"] .header-search i {
+  left: auto;
+  right: 0.75rem;
+}
+
+[dir="rtl"] .breadcrumb-item + .breadcrumb-item::before {
+  content: '‹';
+}
+
+[dir="rtl"] .dropdown-menu {
+  right: 0;
+  left: auto;
+}
+
+/* ===== Gradient Text ===== */
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== Mesh Gradient Background ===== */
+.mesh-gradient {
+  background: 
+    radial-gradient(at 40% 20%, hsla(28,100%,74%,1) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, hsla(355,100%,93%,1) 0px, transparent 50%),
+    radial-gradient(at 80% 50%, hsla(340,100%,76%,1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0px, transparent 50%),
+    radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0px, transparent 50%),
+    radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0px, transparent 50%);
+}
+
+/* ===== Glow Effects ===== */
+.glow-primary { box-shadow: 0 0 20px rgba(37, 99, 235, 0.3); }
+.glow-success { box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
+.glow-warning { box-shadow: 0 0 20px rgba(245, 158, 11, 0.3); }
+.glow-danger { box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }

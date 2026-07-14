@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mark Attendance - EduCore SMS{% endblock %}
+{% block page_title %}Mark Attendance{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'attendance_list' %}" class="text-decoration-none text-muted">
+            <i class="bi bi-arrow-left"></i> Back to Records
+        </a>
+    </div>
+</div>
+
+<!-- Step 1: Select Class, Section, Date -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Class <span class="text-danger">*</span></label>
+                <select name="class_id" class="form-select" required>
+                    <option value="">Select Class</option>
+                    {% for class in classes %}
+                        <option value="{{ class.pk }}" {% if selected_class == class.pk|stringformat:"s" %}selected{% endif %}>{{ class.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Section <span class="text-danger">*</span></label>
+                <select name="section_id" class="form-select" required>
+                    <option value="">Select Section</option>
+                    {% for section in classes %}
+                        {% for sec in section.sections.all %}
+                            <option value="{{ sec.pk }}" {% if selected_section == sec.pk|stringformat:"s" %}selected{% endif %}>{{ section.name }} - {{ sec.name }}</option>
+                        {% endfor %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Date <span class="text-danger">*</span></label>
+                <input type="date" name="date" class="form-control" value="{{ selected_date|default:today.isoformat }}" required>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Load Students
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Step 2: Mark Attendance for Each Student -->
+{% if students %}
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-semibold">
+            <i class="bi bi-people text-primary"></i> Mark Attendance
+            <small class="text-muted ms-2">({{ students|length }} student{{ students|length|pluralize }})</small>
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" id="attendanceForm">
+            {% csrf_token %}
+            <input type="hidden" name="date" value="{{ selected_date }}">
+            <input type="hidden" name="school_class" value="{{ selected_class }}">
+            <input type="hidden" name="section" value="{{ selected_section }}">
+            
+            <div class="table-responsive">
+                <table class="table data-table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">#</th>
+                            <th>Student Name</th>
+                            <th>Roll No</th>
+                            <th style="width: 20%;">Status</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td class="fw-semibold">{{ student.full_name }}</td>
+                            <td>{{ student.roll_number|default:"—" }}</td>
+                            <td>
+                                <input type="hidden" name="student_ids" value="{{ student.pk }}">
+                                <select name="statuses" class="form-select form-select-sm status-select" data-student="{{ student.pk }}">
+                                    <option value="PRESENT" {% if student.pk in existing_ids %}{% for r in records %}{% if r.student_id == student.pk and r.status == 'PRESENT' %}selected{% endif %}{% endfor %}{% endif %}>Present</option>
+                                    <option value="ABSENT" {% if student.pk in existing_ids %}{% for r in records %}{% if r.student_id == student.pk and r.status == 'ABSENT' %}selected{% endif %}{% endfor %}{% endif %}>Absent</option>
+                                    <option value="LATE" {% if student.pk in existing_ids %}{% for r in records %}{% if r.student_id == student.pk and r.status == 'LATE' %}selected{% endif %}{% endfor %}{% endif %}>Late</option>
+                                    <option value="HALF_DAY" {% if student.pk in existing_ids %}{% for r in records %}{% if r.student_id == student.pk and r.status == 'HALF_DAY' %}selected{% endif %}{% endfor %}{% endif %}>Half Day</option>
+                                    <option value="LEAVE" {% if student.pk in existing_ids %}{% for r in records %}{% if r.student_id == student.pk and r.status == 'LEAVE' %}selected{% endif %}{% endfor %}{% endif %}>On Leave</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" name="remarks_list" class="form-control form-control-sm" placeholder="Optional" value="">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-success btn-sm" onclick="setAllStatus('PRESENT')">
+                        <i class="bi bi-check-all"></i> All Present
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="setAllStatus('ABSENT')">
+                        <i class="bi bi-x-circle"></i> All Absent
+                    </button>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Save Attendance
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function setAllStatus(status) {
+    const selects = document.querySelectorAll('.status-select');
+    selects.forEach(select => select.value = status);
+}
+</script>
+{% elif request.GET.class_id and request.GET.section_id %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> No active students found in the selected class and section.
+</div>
+{% endif %}
+{% endblock %}

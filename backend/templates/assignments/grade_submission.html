@@ -1,0 +1,35 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}Grade Submission - EduCore SMS{% endblock %}
+{% block page_title %}Grade Submission{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="mb-4 p-3 bg-light rounded">
+                    <h5 class="fw-semibold mb-1">{{ submission.assignment.title }}</h5>
+                    <p class="text-muted mb-0">Student: {{ submission.student.user.get_full_name }} &bull; Assignment: {{ submission.assignment.title }}</p>
+                </div>
+                <div class="mb-3"><label class="form-label">Marks Obtained <span class="text-danger">*</span></label>{{ form.marks_obtained }}{% if form.marks_obtained.errors %}<div class="text-danger small">{{ form.marks_obtained.errors }}</div>{% endif %}</div>
+                <div class="mb-3"><label class="form-label">Remarks</label>{{ form.teacher_remarks }}{% if form.teacher_remarks.errors %}<div class="text-danger small">{{ form.teacher_remarks.errors }}</div>{% endif %}</div>
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'assignment_detail' submission.assignment.pk %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-success">Save Grade</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% if submission.submission_file %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="fw-semibold">Submitted File:</h6>
+                <a href="{{ submission.submission_file.url }}" target="_blank" class="btn btn-outline-primary mt-2"><i class="bi bi-download"></i> Download Submission</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

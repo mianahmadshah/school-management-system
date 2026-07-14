@@ -1,14 +1,25 @@
 """
 Views for the classes app.
-Provides full CRUD for both Class and Section models.
+Provides full CRUD for both Class and Section models via both Web UI and API.
 """
+from django.urls import reverse_lazy
+from django.shortcuts import redirect
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.contrib.auth import get_user_model
+from django.db.models import Q
+
+from .models import Class, Section
+from .forms import ClassForm, SectionForm
+
+# DRF imports for API
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Count
 
-from .models import Class, Section
 from .serializers import (
     ClassSerializer,
     ClassListSerializer,
@@ -17,22 +28,180 @@ from .serializers import (
 )
 from apps.accounts.permissions import IsAdminUser, IsAdminOrTeacher
 
+User = get_user_model()
+
+
+# ─────────────────────────────────────────────────────────────
+# TEMPLATE-BASED VIEWS (Web UI) — Class
+# ─────────────────────────────────────────────────────────────
+
+class ClassListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    """Renders list of all classes."""
+    model = Class
+    template_name = 'classes/class_list.html'
+    context_object_name = 'classes'
+    paginate_by = 10
+
+    def test_func(self):
+        return self.request.user.role in [User.Role.ADMIN, User.Role.TEACHER]
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+
+    def get_queryset(self):
+        queryset = Class.objects.select_related('class_teacher__user').prefetch_related('sections')
+        q = self.request.GET.get('q', '')
+        if q:
+            queryset = queryset.filter(
+                Q(name__icontains=q) | Q(description__icontains=q)
+            )
+        return queryset
+
+
+class ClassDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    """Renders detailed view of a class with its sections."""
+    model = Class
+    template_name = 'classes/class_detail.html'
+    context_object_name = 'class_obj'
+
+    def test_func(self):
+        return self.request.user.role in [User.Role.ADMIN, User.Role.TEACHER]
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['sections'] = self.object.sections.select_related('section_teacher__user').all()
+        return context
+
+
+class ClassCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    """Form view to create a new class."""
+    model = Class
+    form_class = ClassForm
+    template_name = 'classes/class_form.html'
+    success_url = reverse_lazy('class_list')
+
+    def test_func(self):
+        return self.request.user.role == User.Role.ADMIN
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, f'Class "{self.object.name}" created successfully.')
+        return response
+
+
+class ClassUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """Form view to update an existing class."""
+    model = Class
+    form_class = ClassForm
+    template_name = 'classes/class_form.html'
+    success_url = reverse_lazy('class_list')
+
+    def test_func(self):
+        return self.request.user.role == User.Role.ADMIN
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, f'Class "{self.object.name}" updated successfully.')
+        return response
+
+
+class ClassDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """Deletes a class."""
+    model = Class
+    template_name = 'classes/class_confirm_delete.html'
+    success_url = reverse_lazy('class_list')
+
+    def test_func(self):
+        return self.request.user.role == User.Role.ADMIN
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+
+    def post(self, request, *args, **kwargs):
+        class_obj = self.get_object()
+        class_name = class_obj.name
+        class_obj.delete()
+        messages.success(request, f'Class "{class_name}" deleted successfully.')
+        return redirect(self.success_url)
+
+
+# ─────────────────────────────────────────────────────────────
+# TEMPLATE-BASED VIEWS (Web UI) — Section
+# ─────────────────────────────────────────────────────────────
+
+class SectionCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    """Form view to create a new section within a class."""
+    model = Section
+    form_class = SectionForm
+    template_name = 'classes/section_form.html'
+    success_url = reverse_lazy('class_list')
+
+    def test_func(self):
+        return self.request.user.role == User.Role.ADMIN
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, f'Section "{self.object}" created successfully.')
+        return response
+
+
+class SectionUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """Form view to update an existing section."""
+    model = Section
+    form_class = SectionForm
+    template_name = 'classes/section_form.html'
+    success_url = reverse_lazy('class_list')
+
+    def test_func(self):
+        return self.request.user.role == User.Role.ADMIN
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, f'Section "{self.object}" updated successfully.')
+        return response
+
+
+class SectionDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """Deletes a section."""
+    model = Section
+    template_name = 'classes/section_confirm_delete.html'
+    success_url = reverse_lazy('class_list')
+
+    def test_func(self):
+        return self.request.user.role == User.Role.ADMIN
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+
+    def post(self, request, *args, **kwargs):
+        section = self.get_object()
+        section_name = str(section)
+        section.delete()
+        messages.success(request, f'Section "{section_name}" deleted successfully.')
+        return redirect(self.success_url)
+
+
+# ─────────────────────────────────────────────────────────────
+# DRF VIEWSETS (API) — Keep existing API code intact
+# ─────────────────────────────────────────────────────────────
 
 class ClassViewSet(viewsets.ModelViewSet):
-    """
-    CRUD ViewSet for Class management.
-
-    GET    /api/v1/classes/             → List all classes
-    POST   /api/v1/classes/             → Create a class
-    GET    /api/v1/classes/{id}/        → Class detail with sections
-    PUT    /api/v1/classes/{id}/        → Update class
-    DELETE /api/v1/classes/{id}/        → Delete class
-
-    Custom:
-    GET    /api/v1/classes/active/      → Only active classes
-    GET    /api/v1/classes/{id}/sections/ → All sections of a class
-    """
-    # Annotate queryset with counts to avoid extra DB queries
+    """API CRUD ViewSet for Class management."""
     queryset = Class.objects.annotate(
         total_sections_count=Count('sections', distinct=True),
         total_students_count=Count('sections__enrollments', distinct=True),
@@ -51,89 +220,46 @@ class ClassViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
-            return ClassSerializer          # With nested sections
+            return ClassSerializer
         if self.action in ['create', 'update', 'partial_update']:
             return ClassCreateUpdateSerializer
-        return ClassListSerializer          # For list views
+        return ClassListSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         school_class = serializer.save()
         return Response(
-            {
-                'message': f'Class "{school_class.name}" created successfully.',
-                'data': ClassSerializer(school_class).data
-            },
+            {'message': f'Class "{school_class.name}" created successfully.', 'data': ClassSerializer(school_class).data},
             status=status.HTTP_201_CREATED
         )
 
     @action(detail=False, methods=['get'], permission_classes=[IsAdminOrTeacher])
     def active(self, request):
-        """
-        GET /api/v1/classes/active/
-        Returns only active classes — used for dropdowns in forms.
-        """
         classes = self.queryset.filter(is_active=True)
         serializer = ClassListSerializer(classes, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'], permission_classes=[IsAdminOrTeacher])
     def sections(self, request, pk=None):
-        """
-        GET /api/v1/classes/{id}/sections/
-        Returns all sections for a specific class.
-        Useful for cascading dropdowns: choose class → load its sections.
-        """
         school_class = self.get_object()
-        sections = school_class.sections.filter(is_active=True).select_related(
-            'section_teacher__user'
-        )
+        sections = school_class.sections.filter(is_active=True).select_related('section_teacher__user')
         serializer = SectionSerializer(sections, many=True)
-        return Response({
-            'class': school_class.name,
-            'total_sections': sections.count(),
-            'sections': serializer.data
-        })
+        return Response({'class': school_class.name, 'total_sections': sections.count(), 'sections': serializer.data})
 
     @action(detail=False, methods=['get'], permission_classes=[IsAdminUser])
     def stats(self, request):
-        """
-        GET /api/v1/classes/stats/
-        Summary statistics for the admin dashboard.
-        """
         total = Class.objects.count()
         active = Class.objects.filter(is_active=True).count()
         total_sections = Section.objects.count()
         active_sections = Section.objects.filter(is_active=True).count()
-
-        return Response({
-            'total_classes': total,
-            'active_classes': active,
-            'total_sections': total_sections,
-            'active_sections': active_sections,
-        })
+        return Response({'total_classes': total, 'active_classes': active, 'total_sections': total_sections, 'active_sections': active_sections})
 
 
 class SectionViewSet(viewsets.ModelViewSet):
-    """
-    CRUD ViewSet for Section management.
-
-    GET    /api/v1/classes/sections/           → List all sections
-    POST   /api/v1/classes/sections/           → Create a section
-    GET    /api/v1/classes/sections/{id}/      → Section detail
-    PUT    /api/v1/classes/sections/{id}/      → Update
-    DELETE /api/v1/classes/sections/{id}/      → Delete
-
-    Filter:  ?school_class=1
-    Search:  ?search=A
-    """
-    queryset = Section.objects.select_related(
-        'school_class', 'section_teacher__user'
-    ).all()
-
+    """CRUD ViewSet for Section management."""
+    queryset = Section.objects.select_related('school_class', 'section_teacher__user').all()
     serializer_class = SectionSerializer
-
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'school_class__name', 'room_number']
     filterset_fields = ['school_class', 'is_active']
@@ -149,10 +275,4 @@ class SectionViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         section = serializer.save()
-        return Response(
-            {
-                'message': f'Section "{section}" created successfully.',
-                'data': SectionSerializer(section).data
-            },
-            status=status.HTTP_201_CREATED
-        )
+        return Response({'message': f'Section "{section}" created successfully.', 'data': SectionSerializer(section).data}, status=status.HTTP_201_CREATED)

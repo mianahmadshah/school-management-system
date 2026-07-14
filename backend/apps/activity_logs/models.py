@@ -99,7 +99,7 @@ class ActivityLog(models.Model):
         return f"{self.user} - {self.get_action_display()} on {self.model_name} ({self.timestamp})"
 
     @classmethod
-    def log(cls, user, action, model_name, object_id, object_repr=None, description=None, ip_address=None):
+    def log(cls, user, action, model_name, object_id, object_repr=None, description=None, ip_address=None, user_agent=None, request=None):
         """
         Create a log entry.
         
@@ -113,6 +113,13 @@ class ActivityLog(models.Model):
                 description=f"Created student {student.user.get_full_name()}"
             )
         """
+        # Extract IP and user agent from request if provided
+        if request:
+            if ip_address is None:
+                ip_address = cls._get_client_ip(request)
+            if user_agent is None:
+                user_agent = cls._get_user_agent(request)
+        
         return cls.objects.create(
             user=user,
             action=action,
@@ -120,8 +127,24 @@ class ActivityLog(models.Model):
             object_id=object_id,
             object_repr=object_repr or str(object_id),
             description=description,
-            ip_address=ip_address
+            ip_address=ip_address,
+            user_agent=user_agent
         )
+    
+    @staticmethod
+    def _get_client_ip(request):
+        """Extract client IP address from request."""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+    
+    @staticmethod
+    def _get_user_agent(request):
+        """Extract user agent from request."""
+        return request.META.get('HTTP_USER_AGENT', '')
 
     @classmethod
     def get_user_activity(cls, user, limit=50):

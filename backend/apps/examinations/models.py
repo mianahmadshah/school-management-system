@@ -110,7 +110,7 @@ class Exam(models.Model):
     @property
     def total_enrolled_students(self):
         """Count students in this class."""
-        return self.school_class.students.filter(is_active=True).count()
+        return self.school_class.students.filter(status='ACTIVE').count()
 
     @property
     def marks_submitted_count(self):
@@ -190,26 +190,28 @@ class Marks(models.Model):
 
     class Meta:
         db_table = 'marks'
-        verbose_name = 'Mark'
+        verbose_name = 'Marks'
         verbose_name_plural = 'Marks'
         unique_together = [['exam', 'student', 'subject']]
         ordering = ['exam', 'student__user__first_name']
 
     def __str__(self):
-        return f"{self.student.user.get_full_name()} - {self.exam.name}"
+        return f"{self.student.full_name} - {self.subject.name} - {self.obtained_marks}/{self.total_marks}"
 
     def save(self, *args, **kwargs):
         """Auto-calculate grade and pass/fail status."""
         if self.obtained_marks is not None:
             self.is_passed = self.obtained_marks >= self.passing_marks
             percentage = (self.obtained_marks / self.total_marks) * 100 if self.total_marks > 0 else 0
-            if percentage >= 85:
+            if percentage >= 90:
+                self.grade = 'A+'
+            elif percentage >= 80:
                 self.grade = 'A'
             elif percentage >= 70:
                 self.grade = 'B'
-            elif percentage >= 55:
+            elif percentage >= 60:
                 self.grade = 'C'
-            elif percentage >= 40:
+            elif percentage >= 50:
                 self.grade = 'D'
             else:
                 self.grade = 'F'
@@ -225,104 +227,6 @@ class Marks(models.Model):
 
 class Result(models.Model):
     """
-    Overall result/grade card for a student in an academic session.
-    """
-    student = models.ForeignKey(
-        'students.Student',
-        on_delete=models.CASCADE,
-        related_name='results'
-    )
-    school_class = models.ForeignKey(
-        'classes.Class',
-        on_delete=models.CASCADE,
-        related_name='results'
-    )
-    academic_year = models.CharField(
-        max_length=20,
-        help_text="e.g. 2023-2024"
-    )
-    total_marks_obtained = models.FloatField(
-        validators=[MinValueValidator(0)],
-        help_text="Total marks obtained."
-    )
-    total_marks = models.PositiveIntegerField(
-        help_text="Total possible marks."
-    )
-    percentage = models.FloatField(
-        validators=[MinValueValidator(0), MaxValueValidator(100)],
-        help_text="Overall percentage."
-    )
-    grade = models.CharField(
-        max_length=2,
-        help_text="Overall grade."
-    )
-    status = models.CharField(
-        max_length=20,
-        choices=[
-            ('PASSED', 'Passed'),
-            ('FAILED', 'Failed'),
-            ('PROMOTED', 'Promoted'),
-            ('DETAINED', 'Detained'),
-        ],
-        help_text="Pass/Fail status."
-    )
-    remarks = models.TextField(
-        blank=True,
-        null=True,
-        help_text="Additional remarks."
-    )
-    issued_date = models.DateField(auto_now_add=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'results'
-        verbose_name = 'Result'
-        verbose_name_plural = 'Results'
-        unique_together = [['student', 'school_class', 'academic_year']]
-        ordering = ['academic_year', '-percentage']
-
-    def __str__(self):
-        return f"{self.student.user.get_full_name()} - {self.academic_year} ({self.grade})"
-
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'marks'
-        verbose_name = 'Marks'
-        verbose_name_plural = 'Marks'
-        unique_together = [['exam', 'student', 'subject']]
-        ordering = ['exam', 'student', 'subject']
-
-    def __str__(self):
-        return f"{self.student.full_name} - {self.subject.name} - {self.obtained_marks}/{self.total_marks}"
-
-    def save(self, *args, **kwargs):
-        # Auto-calculate grade and pass/fail before saving
-        percentage = (self.obtained_marks / self.total_marks) * 100 if self.total_marks > 0 else 0
-        
-        self.is_passed = self.obtained_marks >= self.passing_marks
-        
-        if percentage >= 90:
-            self.grade = 'A+'
-        elif percentage >= 80:
-            self.grade = 'A'
-        elif percentage >= 70:
-            self.grade = 'B'
-        elif percentage >= 60:
-            self.grade = 'C'
-        elif percentage >= 50:
-            self.grade = 'D'
-        else:
-            self.grade = 'F'
-            
-        super().save(*args, **kwargs)
-
-
-class Result(models.Model):
-    """
     Overall result for a student in a specific exam (consolidating all subject marks).
     """
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='results')
@@ -334,7 +238,7 @@ class Result(models.Model):
     
     overall_grade = models.CharField(max_length=5, blank=True, null=True)
     passed = models.BooleanField(default=False)
-    remarks = models.CharField(max_length=255, blank=True, null=True)
+    remarks = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
