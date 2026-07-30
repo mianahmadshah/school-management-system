@@ -277,7 +277,6 @@
     // Load non-critical features during idle time
     scheduleIdleTask(() => {
         // Preload next page data or initialize non-critical components
-        console.log('[Loading] Idle tasks scheduled');
     });
 
     // ===== Performance Monitoring =====
@@ -287,10 +286,6 @@
                 const perfData = window.performance.timing;
                 const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
                 const connectTime = perfData.responseEnd - perfData.requestStart;
-                
-                console.log(`%c[Performance] Page load: ${pageLoadTime}ms | Connect: ${connectTime}ms`,
-                    'color: #64748B; font-size: 10px;'
-                );
             }, 0);
         });
     }
@@ -300,8 +295,6 @@
         window.addEventListener('load', () => {
             // Uncomment when service worker is ready
             // navigator.serviceWorker.register('/sw.js')
-            //     .then(reg => console.log('SW registered'))
-            //     .catch(err => console.log('SW registration failed'));
         });
     }
 

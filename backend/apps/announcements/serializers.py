@@ -14,7 +14,7 @@ class AnnouncementSerializer(serializers.ModelSerializer):
             'id', 'title', 'content', 'target_audience', 
             'target_class', 'target_class_name', 
             'attachment', 'created_by', 'created_by_name', 
-            'is_active', 'created_at', 'updated_at'
+            'is_published', 'is_important', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_by', 'created_at', 'updated_at']
 

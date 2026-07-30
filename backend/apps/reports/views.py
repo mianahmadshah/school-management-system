@@ -35,14 +35,17 @@ class ReportDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Quick stats
-        context['total_students'] = Student.objects.filter(is_active=True).count()
-        context['total_teachers'] = Teacher.objects.filter(is_active=True).count()
+        context['total_students'] = Student.objects.filter(status='ACTIVE').count()
+        context['total_teachers'] = Teacher.objects.filter(status='ACTIVE').count()
         context['total_classes'] = Class.objects.filter(is_active=True).count()
         
         # Fee collection stats
-        invoices = FeeInvoice.objects.all()
-        context['total_fee_collected'] = sum(inv.amount_paid for inv in invoices)
-        context['total_fee_pending'] = sum(inv.balance_due for inv in invoices)
+        fee_agg = FeeInvoice.objects.aggregate(
+            collected=Sum('amount_paid'),
+            total=Sum('total_amount')
+        )
+        context['total_fee_collected'] = fee_agg['collected'] or 0
+        context['total_fee_pending'] = (fee_agg['total'] or 0) - (fee_agg['collected'] or 0)
         
         # Attendance today
         today = timezone.now().date()
@@ -84,26 +87,23 @@ class AttendanceReportView(LoginRequiredMixin, UserPassesTestMixin, FormView):
         
         # Group by class
         classes = Class.objects.filter(is_active=True)
-        report_data = []
-        for cls in classes:
-            class_attendance = qs.filter(student__current_class=cls)
-            total = class_attendance.count()
-            present = class_attendance.filter(status='PRESENT').count()
-            absent = class_attendance.filter(status='ABSENT').count()
-            late = class_attendance.filter(status='LATE').count()
-            excused = class_attendance.filter(status='EXCUSED').count()
-            
-            percentage = (present / total * 100) if total > 0 else 0
-            
-            report_data.append({
-                'class': cls.name,
-                'total': total,
-                'present': present,
-                'absent': absent,
-                'late': late,
-                'excused': excused,
-                'percentage': round(percentage, 1)
-            })
+        # Use a single annotated query instead of N+1 loop
+        from django.db.models import Case, When, IntegerField
+        report_data = list(
+            qs.values('student__current_class__name')
+            .annotate(
+                total=Count('id'),
+                present=Count(Case(When(status='PRESENT', then=1), output_field=IntegerField())),
+                absent=Count(Case(When(status='ABSENT', then=1), output_field=IntegerField())),
+                late=Count(Case(When(status='LATE', then=1), output_field=IntegerField())),
+                excused=Count(Case(When(status='EXCUSED', then=1), output_field=IntegerField())),
+            )
+            .order_by('student__current_class__name')
+        )
+        for item in report_data:
+            item['class'] = item.pop('student__current_class__name')
+            total = item['total']
+            item['percentage'] = round((item['present'] / total * 100), 1) if total > 0 else 0
         
         context['report_data'] = report_data
         context['classes'] = classes
@@ -133,19 +133,20 @@ class AcademicReportView(LoginRequiredMixin, UserPassesTestMixin, FormView):
         
         # Group by class
         classes = Class.objects.filter(is_active=True)
-        report_data = []
-        for cls in classes:
-            class_results = qs.filter(student__current_class=cls)
-            count = class_results.count()
-            avg_marks = class_results.aggregate(avg=Avg('total_marks_obtained'))['avg'] or 0
-            max_marks = class_results.aggregate(max=Sum('total_marks_obtained'))['max'] or 0
-            
-            report_data.append({
-                'class': cls.name,
-                'students_count': count,
-                'avg_marks': round(avg_marks, 1),
-                'max_marks': max_marks
-            })
+        from django.db.models import Max
+        report_data = list(
+            qs.values('student__current_class__name')
+            .annotate(
+                students_count=Count('id'),
+                avg_marks=Avg('total_marks_obtained'),
+                max_marks=Max('total_marks_obtained'),
+            )
+            .order_by('student__current_class__name')
+        )
+        for item in report_data:
+            item['class'] = item.pop('student__current_class__name')
+            item['avg_marks'] = round(item['avg_marks'] or 0, 1)
+            item['max_marks'] = item['max_marks'] or 0
         
         context['report_data'] = report_data
         context['classes'] = classes
@@ -178,19 +179,17 @@ class FeeCollectionReportView(LoginRequiredMixin, UserPassesTestMixin, FormView)
         
         # Group by class
         classes = Class.objects.filter(is_active=True)
-        report_data = []
-        for cls in classes:
-            class_invoices = qs.filter(student__current_class=cls)
-            total_amount = sum(inv.total_amount for inv in class_invoices)
-            total_paid = sum(inv.amount_paid for inv in class_invoices)
-            total_due = sum(inv.balance_due for inv in class_invoices)
-            
-            report_data.append({
-                'class': cls.name,
-                'total_amount': total_amount,
-                'total_paid': total_paid,
-                'total_due': total_due
-            })
+        report_data = list(
+            qs.values('student__current_class__name')
+            .annotate(
+                total_amount=Sum('total_amount'),
+                total_paid=Sum('amount_paid'),
+            )
+            .order_by('student__current_class__name')
+        )
+        for item in report_data:
+            item['class'] = item.pop('student__current_class__name')
+            item['total_due'] = (item['total_amount'] or 0) - (item['total_paid'] or 0)
         
         context['report_data'] = report_data
         context['classes'] = classes

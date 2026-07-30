@@ -135,10 +135,25 @@ class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         from apps.students.models import Student
         from apps.teachers.models import Teacher
         from apps.classes.models import Class
+        from apps.timetable.models import Timetable, Period
+        from apps.attendance.models import Attendance
+        from django.utils import timezone
+        import datetime
         
         context['students_count'] = Student.objects.count()
         context['teachers_count'] = Teacher.objects.count()
         context['classes_count'] = Class.objects.count()
+        
+        # Timetable stats
+        context['timetable_entries_count'] = Timetable.objects.filter(is_active=True).count()
+        context['periods_count'] = Period.objects.count()
+        
+        # Attendance percentage for today
+        today = timezone.localdate()
+        today_attendance = Attendance.objects.filter(date=today)
+        total_today = today_attendance.count()
+        present_today = today_attendance.filter(status='PRESENT').count()
+        context['attendance_percentage'] = f"{int((present_today / total_today) * 100)}%" if total_today > 0 else "N/A"
         
         # Latest activities
         context['activity_logs'] = ActivityLog.objects.select_related('user').order_by('-timestamp')[:5]
@@ -172,15 +187,51 @@ class TeacherDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
             from apps.timetable.models import Timetable
             from apps.assignments.models import Assignment
             from apps.classes.models import Section
-            
-            context['classes_count'] = Section.objects.filter(section_teacher=teacher).count()
-            # Fetch assigned student count
             from apps.students.models import Student
-            context['students_count'] = Student.objects.filter(current_class__sections__section_teacher=teacher).distinct().count()
-            context['assignments_count'] = Assignment.objects.filter(teacher=teacher).count()
+            from apps.activity_logs.models import ActivityLog
+            from django.utils import timezone
+            from datetime import timedelta
+            import datetime
             
-            # Fetch schedule
-            context['schedule'] = Timetable.objects.filter(teacher=teacher).select_related('class_name', 'subject')
+            # Get today's day name
+            today_name = datetime.datetime.now().strftime('%A').upper()
+            
+            # Subjects taught count (distinct subjects)
+            context['subjects_taught'] = Timetable.objects.filter(teacher=teacher, is_active=True).values('subject').distinct().count()
+            
+            # Total students count
+            context['total_students'] = Student.objects.filter(current_class__sections__section_teacher=teacher).distinct().count()
+            
+            # Today's classes count
+            context['today_classes'] = Timetable.objects.filter(teacher=teacher, is_active=True, day_of_week=today_name).count()
+            
+            # Pending assignments count
+            context['pending_assignments'] = Assignment.objects.filter(teacher=teacher).count()
+            
+            # Today's schedule with proper data
+            today_entries = Timetable.objects.filter(
+                teacher=teacher, is_active=True, day_of_week=today_name
+            ).select_related('school_class', 'section', 'subject', 'period').order_by('period__order')
+            
+            context['today_schedule'] = []
+            for entry in today_entries:
+                context['today_schedule'].append({
+                    'period_number': entry.period.order,
+                    'subject': entry.subject.name,
+                    'class_group': f"{entry.school_class.name} - {entry.section.name}",
+                    'start_time': entry.period.start_time,
+                    'end_time': entry.period.end_time,
+                    'room': entry.room_number or '—',
+                })
+            
+            # Pending submissions count
+            from apps.assignments.models import Submission
+            context['pending_submissions'] = Submission.objects.filter(
+                assignment__teacher=teacher, status='SUBMITTED'
+            ).select_related('student', 'assignment')[:8]
+            
+            # Recent activity logs
+            context['activity_logs'] = ActivityLog.objects.order_by('-timestamp')[:8]
         
         from apps.announcements.models import Announcement
         context['announcements'] = Announcement.objects.select_related('published_by').order_by('-published_at')[:5]
@@ -206,20 +257,68 @@ class StudentDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         student = getattr(self.request.user, 'student_profile', None)
         if student:
             from apps.timetable.models import Timetable
-            from apps.assignments.models import Assignment
+            from apps.assignments.models import Assignment, Submission
             from apps.attendance.models import Attendance
+            from apps.announcements.models import Announcement
+            from apps.examinations.models import Result
+            import datetime
             
             # Calculate attendance percentage
             total_days = Attendance.objects.filter(student=student).count()
             present_days = Attendance.objects.filter(student=student, status='PRESENT').count()
             context['attendance_percentage'] = f"{int((present_days / total_days) * 100)}%" if total_days > 0 else "N/A"
             
-            # Pending assignments
+            # Pending assignments count
             context['pending_assignments'] = Assignment.objects.filter(class_name=student.current_class).count()
             
-            # Today's schedule
-            context['schedule'] = Timetable.objects.filter(class_name=student.current_class).select_related('subject', 'teacher__user')
+            # Average grade
+            student_results = Result.objects.filter(student=student)
+            if student_results.exists():
+                total_marks = sum(r.marks_obtained for r in student_results)
+                total_possible = sum(r.total_marks for r in student_results)
+                avg = (total_marks / total_possible) * 100 if total_possible > 0 else 0
+                if avg >= 90:
+                    context['average_grade'] = 'A+'
+                elif avg >= 80:
+                    context['average_grade'] = 'A'
+                elif avg >= 70:
+                    context['average_grade'] = 'B'
+                elif avg >= 60:
+                    context['average_grade'] = 'C'
+                else:
+                    context['average_grade'] = 'D'
+            else:
+                context['average_grade'] = 'N/A'
             
+            # Today's schedule with proper data
+            today_name = datetime.datetime.now().strftime('%A').upper()
+            today_entries = Timetable.objects.filter(
+                school_class=student.current_class,
+                section=student.section,
+                is_active=True,
+                day_of_week=today_name
+            ).select_related('subject', 'teacher__user', 'period').order_by('period__order')
+            
+            context['today_schedule'] = []
+            for entry in today_entries:
+                context['today_schedule'].append({
+                    'period_number': entry.period.order,
+                    'subject': entry.subject.name,
+                    'teacher': entry.teacher.user.get_full_name(),
+                    'start_time': entry.period.start_time,
+                    'room': entry.room_number or '—',
+                })
+            
+            # New announcements count
+            context['new_announcements'] = Announcement.objects.filter(
+                published_at__date=datetime.date.today()
+            ).count()
+            
+            # Recent results
+            context['recent_results'] = Result.objects.filter(student=student).select_related(
+                'exam', 'subject'
+            ).order_by('-exam__date')[:5]
+        
         from apps.announcements.models import Announcement
         context['announcements'] = Announcement.objects.select_related('published_by').order_by('-published_at')[:5]
         return context
@@ -256,12 +355,12 @@ class UserPasswordChangeView(LoginRequiredMixin, SuccessMessageMixin, PasswordCh
 # BACKWARD COMPATIBLE DRF VIEWS (Kept for reference)
 # ─────────────────────────────────────────────────────────────
 
-class LoginView(TokenObtainPairView):
+class APILoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
     permission_classes = [AllowAny]
 
 
-class LogoutView(APIView):
+class APILogoutView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         try:
@@ -275,7 +374,7 @@ class LogoutView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ProfileView(generics.RetrieveUpdateAPIView):
+class APIProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     def get_object(self):
         return self.request.user
@@ -285,7 +384,7 @@ class ProfileView(generics.RetrieveUpdateAPIView):
         return UserUpdateSerializer
 
 
-class ChangePasswordView(APIView):
+class APIChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = ChangePasswordSerializer(data=request.data)

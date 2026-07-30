@@ -229,6 +229,83 @@ CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[
 CORS_ALLOW_CREDENTIALS = True   # Allow cookies/auth headers cross-origin
 
 # ─────────────────────────────────────────────────────────────
+# SECURITY HARDENING (applied when DEBUG=False)
+# ─────────────────────────────────────────────────────────────
+if not DEBUG:
+    # HTTPS / SSL
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # HTTP Strict Transport Security (HSTS)
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    
+    # Prevent content type sniffing
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    
+    # XSS protection (modern browsers)
+    SECURE_BROWSER_XSS_FILTER = True
+    
+    # Clickjacking protection
+    X_FRAME_OPTIONS = 'DENY'
+    
+    # Referrer policy
+    SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
+# ─────────────────────────────────────────────────────────────
+# SESSION SECURITY
+# ─────────────────────────────────────────────────────────────
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_AGE = 3600  # 1 hour
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# ─────────────────────────────────────────────────────────────
+# LOGGING CONFIGURATION
+# ─────────────────────────────────────────────────────────────
+LOGS_DIR = BASE_DIR / 'logs'
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': LOGS_DIR / 'django.log',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': env('LOG_LEVEL', default='WARNING'),
+            'propagate': True,
+        },
+        'apps': {
+            'handlers': ['console', 'file'],
+            'level': env('LOG_LEVEL', default='INFO'),
+            'propagate': True,
+        },
+    },
+}
+
+# ─────────────────────────────────────────────────────────────
 # FILE UPLOAD SETTINGS
 # ─────────────────────────────────────────────────────────────
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024   # 5MB max file size

@@ -9,6 +9,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
+from config.views import health_check
 
 # Views
 from apps.accounts.views import (
@@ -220,6 +221,7 @@ urlpatterns = [
 
     # Permissions error
     path('unauthorized/', TemplateView.as_view(template_name='accounts/unauthorized.html'), name='unauthorized'),
+    path('health/', health_check, name='health_check'),
 
     # ─── REST API Version 1 (DRF) ─────────────────────────────────────────────
     path('api/v1/', include('api.v1.urls')),

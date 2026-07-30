@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Admin Dashboard - EduCore SMS{% endblock %}
+{% block title %}Admin Dashboard -  SMS{% endblock %}
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
 <!-- Welcome Banner -->
 <div class="welcome-banner animate-fade-in">
     <div class="welcome-banner-content">
-        <h2>Welcome back, {{ request.user.first_name }}! 👋</h2>
+        <h2>Welcome back, {{ request.user.first_name }}! </h2>
         <p>Here is what's happening at your school today. Keep track of students, teachers, and academic activities in real-time.</p>
     </div>
     <i class="bi bi-mortarboard welcome-banner-icon"></i>
@@ -21,9 +21,6 @@
             <div class="stat-item-icon primary">
                 <i class="bi bi-people-fill"></i>
             </div>
-            <span class="stats-card-trend up">
-                <i class="bi bi-arrow-up"></i> 12%
-            </span>
         </div>
         <div class="stat-item-value">{{ students_count|default:"0" }}</div>
         <div class="stat-item-label">Total Students</div>
@@ -34,9 +31,6 @@
             <div class="stat-item-icon success">
                 <i class="bi bi-person-video3"></i>
             </div>
-            <span class="stats-card-trend up">
-                <i class="bi bi-arrow-up"></i> 5%
-            </span>
         </div>
         <div class="stat-item-value">{{ teachers_count|default:"0" }}</div>
         <div class="stat-item-label">Total Teachers</div>
@@ -51,6 +45,16 @@
         <div class="stat-item-value">{{ classes_count|default:"0" }}</div>
         <div class="stat-item-label">Total Classes</div>
     </div>
+
+    <div class="stat-item animate-fade-in-up delay-4">
+        <div class="stat-item-header">
+            <div class="stat-item-icon info">
+                <i class="bi bi-calendar3"></i>
+            </div>
+        </div>
+        <div class="stat-item-value">{{ timetable_entries_count|default:"0" }}</div>
+        <div class="stat-item-label">Timetable Entries</div>
+    </div>
 </div>
 
 <!-- Stats Grid -->
@@ -58,9 +62,6 @@
     <div class="stats-card animate-fade-in-up delay-1">
         <div class="stats-card-header">
             <div class="stats-card-icon primary"><i class="bi bi-people-fill"></i></div>
-            <span class="stats-card-trend up">
-                <i class="bi bi-arrow-up"></i> 12%
-            </span>
         </div>
         <div class="stats-card-label">Total Students</div>
         <h3 class="stats-card-value">{{ students_count|default:"0" }}</h3>
@@ -72,9 +73,6 @@
     <div class="stats-card animate-fade-in-up delay-2">
         <div class="stats-card-header">
             <div class="stats-card-icon success"><i class="bi bi-person-video3"></i></div>
-            <span class="stats-card-trend up">
-                <i class="bi bi-arrow-up"></i> 5%
-            </span>
         </div>
         <div class="stats-card-label">Total Teachers</div>
         <h3 class="stats-card-value">{{ teachers_count|default:"0" }}</h3>
@@ -102,6 +100,28 @@
         <h3 class="stats-card-value">{{ attendance_percentage|default:"N/A" }}</h3>
         <div class="stats-card-footer">
             <a href="{% url 'attendance_list' %}">View attendance →</a>
+        </div>
+    </div>
+
+    <div class="stats-card animate-fade-in-up delay-5">
+        <div class="stats-card-header">
+            <div class="stats-card-icon secondary"><i class="bi bi-calendar3"></i></div>
+        </div>
+        <div class="stats-card-label">Timetable Entries</div>
+        <h3 class="stats-card-value">{{ timetable_entries_count|default:"0" }}</h3>
+        <div class="stats-card-footer">
+            <a href="{% url 'timetable_list' %}">View timetable →</a>
+        </div>
+    </div>
+
+    <div class="stats-card animate-fade-in-up delay-6">
+        <div class="stats-card-header">
+            <div class="stats-card-icon secondary"><i class="bi bi-clock"></i></div>
+        </div>
+        <div class="stats-card-label">Periods</div>
+        <h3 class="stats-card-value">{{ periods_count|default:"0" }}</h3>
+        <div class="stats-card-footer">
+            <a href="{% url 'period_list' %}">Manage periods →</a>
         </div>
     </div>
 </div>
@@ -136,6 +156,14 @@
             <a href="{% url 'announcement_create' %}" class="quick-action-item">
                 <div class="quick-action-icon"><i class="bi bi-megaphone"></i></div>
                 <span class="quick-action-label">Announcement</span>
+            </a>
+            <a href="{% url 'timetable_create' %}" class="quick-action-item">
+                <div class="quick-action-icon"><i class="bi bi-calendar-plus"></i></div>
+                <span class="quick-action-label">Add Timetable</span>
+            </a>
+            <a href="{% url 'period_list' %}" class="quick-action-item">
+                <div class="quick-action-icon"><i class="bi bi-clock"></i></div>
+                <span class="quick-action-label">Manage Periods</span>
             </a>
         </div>
     </div>

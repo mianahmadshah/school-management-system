@@ -77,6 +77,4 @@
         // Ensure the active indicator is visible
         activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
-
-    console.log('[Sidebar] Initialized successfully');
 })();

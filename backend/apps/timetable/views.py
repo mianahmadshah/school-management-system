@@ -136,6 +136,8 @@ class TimetableCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return context
 
     def form_valid(self, form):
+        # Ensure the entry is active by default (the checkbox is not rendered in the template)
+        form.instance.is_active = True
         response = super().form_valid(form)
         messages.success(self.request, 'Timetable entry created.')
         return response

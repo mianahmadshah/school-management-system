@@ -54,8 +54,7 @@ class MinifyHTMLMiddleware:
         html = html.decode('utf-8')
         # Remove whitespace between tags
         html = ' '.join(html.split())
-        # Remove comments
-        html = html.replace('<!-- ', '<').replace(' -->', '>')
+        # Comment removal omitted — naive regex would break conditional comments and inline scripts
         return html.encode('utf-8')
 
 
@@ -76,12 +75,13 @@ class ETagMiddleware:
     def set_etag(self, request, response):
         """Generate and set ETag."""
         try:
-            etag = str(hash(response.content.decode('utf-8')))
+            import hashlib
+            etag = hashlib.md5(response.content).hexdigest()
             response['ETag'] = etag
 
             # Check if client sent If-None-Match
-            if 'HTTP_IF_NONE_MATCH' in request.environ:
-                if request.environ['HTTP_IF_NONE_MATCH'] == etag:
+            if 'HTTP_IF_NONE_MATCH' in request.META:
+                if request.META['HTTP_IF_NONE_MATCH'] == etag:
                     return HttpResponse(status=304)
 
         except Exception:

@@ -75,7 +75,6 @@
             }
             
             // Here you could open a notifications dropdown/modal
-            console.log('Notifications clicked - Feature ready for implementation');
         });
     }
 
@@ -121,7 +120,6 @@
             if (e.key === 'Enter') {
                 const query = searchInput.value.trim();
                 if (query) {
-                    console.log('Search query:', query);
                     // Here you could implement global search
                     // For now, redirect to a search results page
                     // window.location.href = `/search?q=${encodeURIComponent(query)}`;
@@ -292,12 +290,5 @@
     }
 
     // ===== Console Branding =====
-    console.log('%c EduCore SMS %c Premium Edition ',
-        'background: linear-gradient(135deg, #315EFB 0%, #6D7CFB 100%); color: white; padding: 8px 12px; border-radius: 6px 0 0 6px; font-weight: bold; font-size: 14px;',
-        'background: #111827; color: #fff; padding: 8px 12px; border-radius: 0 6px 6px 0; font-size: 14px;'
-    );
-    console.log('%c✨ Professional School Management System',
-        'color: #64748B; font-size: 11px; margin-top: 4px;'
-    );
 
 })();
