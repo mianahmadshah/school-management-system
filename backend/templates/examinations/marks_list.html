@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Marks List - EduCore SMS{% endblock %}
+{% block page_title %}Student Marks{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Marks List</h1>
+        <p class="page-header-subtitle">View and search student marks records.</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'marks_entry' %}" class="btn btn-primary">
+            <i class="bi bi-file-earmark-arrow-up"></i> Enter Marks
+        </a>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="table-header">
+        <div class="table-header-left">
+            <h5 class="table-title">Student Marks</h5>
+            <span class="table-subtitle">{{ marks_list|length }} record(s)</span>
+        </div>
+        <div class="table-header-right">
+            <form method="GET" class="d-flex gap-2">
+                <select name="exam_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Exams</option>
+                    {% for exam in exams %}
+                        <option value="{{ exam.id }}" {% if request.GET.exam_id == exam.id|stringformat:"i" %}selected{% endif %}>{{ exam.name }}</option>
+                    {% endfor %}
+                </select>
+                <select name="class_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Classes</option>
+                    {% for cls in classes %}
+                        <option value="{{ cls.id }}" {% if request.GET.class_id == cls.id|stringformat:"i" %}selected{% endif %}>{{ cls.name }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Exam</th>
+                    <th>Subject</th>
+                    <th>Obtained / Total</th>
+                    <th>Grade</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if marks_list %}
+                    {% for mark in marks_list %}
+                    <tr>
+                        <td>
+                            <div class="name-info">
+                                <span class="name">{{ mark.student.full_name }}</span>
+                                <span class="subtitle">Roll: {{ mark.student.roll_number }}</span>
+                            </div>
+                        </td>
+                        <td>{{ mark.exam.name }}</td>
+                        <td>{{ mark.subject.name }}</td>
+                        <td>{{ mark.obtained_marks }} / {{ mark.total_marks }}</td>
+                        <td><strong>{{ mark.grade }}</strong></td>
+                        <td>
+                            <span class="badge {% if mark.is_passed %}bg-success{% else %}bg-danger{% endif %} text-white">
+                                {% if mark.is_passed %}Pass{% else %}Fail{% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="table-empty">
+                                <div class="table-empty-icon"><i class="bi bi-file-earmark-text"></i></div>
+                                <p class="table-empty-text">No marks records found</p>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

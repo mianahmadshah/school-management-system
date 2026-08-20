@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Bulk Generate Invoices - School ERP{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'invoice_list' %}" class="btn btn-sm btn-light border rounded-circle me-3 p-2">
+                <i class="bi bi-arrow-left fs-6"></i>
+            </a>
+            <h1 class="h3 font-weight-bold text-slate-800 mb-0">Generate Class Monthly Fee Invoices</h1>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4 p-md-5">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label font-weight-semibold text-slate-700">Academic Session <span class="text-danger">*</span></label>
+                        <select name="session_id" class="form-select" required>
+                            {% for s in sessions %}
+                                <option value="{{ s.pk }}" {% if s.is_current %}selected{% endif %}>{{ s.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-semibold text-slate-700">Select Class <span class="text-danger">*</span></label>
+                            <select name="class_id" class="form-select" required>
+                                <option value="">--- Select Class ---</option>
+                                {% for cls in classes %}
+                                    <option value="{{ cls.pk }}">{{ cls.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-semibold text-slate-700">Fee Category</label>
+                            <select name="category_id" class="form-select">
+                                <option value="">--- Select Category ---</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat.pk }}">{{ cat.name }} (Default Rs. {{ cat.default_amount }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-semibold text-slate-700">Custom Amount (Rs.)</label>
+                            <input type="number" step="0.01" name="amount" class="form-control" placeholder="Leave blank to use Category Default">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-semibold text-slate-700">Payment Due Date <span class="text-danger">*</span></label>
+                            <input type="date" name="due_date" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
+                        <a href="{% url 'invoice_list' %}" class="btn btn-light px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary btn-lg shadow-sm px-5">Generate Invoices</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

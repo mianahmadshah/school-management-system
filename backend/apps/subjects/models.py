@@ -68,9 +68,16 @@ class Subject(models.Model):
 
 class Enrollment(models.Model):
     """
-    Enrollment links a student to a Class and Section for a specific academic year.
-    It tracks the student's academic placement.
+    Enrollment links a student to a Class and Section for a specific academic year / session.
+    It tracks the student's academic placement and promotion history.
     """
+    class EnrollmentStatus(models.TextChoices):
+        ENROLLED = 'ENROLLED', 'Currently Enrolled'
+        PROMOTED = 'PROMOTED', 'Promoted to Next Grade'
+        REPEATING = 'REPEATING', 'Repeating Grade'
+        PASSED = 'PASSED', 'Passed Session'
+        FAILED = 'FAILED', 'Failed Session'
+
     student = models.ForeignKey(
         'students.Student',
         on_delete=models.CASCADE,
@@ -86,15 +93,29 @@ class Enrollment(models.Model):
         on_delete=models.CASCADE,
         related_name='enrollments'
     )
+    academic_session = models.ForeignKey(
+        'classes.AcademicSession',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='enrollments'
+    )
     academic_year = models.CharField(
         max_length=20,
-        help_text="e.g. 2023-2024"
+        blank=True,
+        null=True,
+        help_text="e.g. 2026-2027"
     )
     roll_number = models.CharField(
         max_length=20,
         blank=True,
         null=True,
         help_text="Roll number for this specific enrollment."
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=EnrollmentStatus.choices,
+        default=EnrollmentStatus.ENROLLED
     )
     enrollment_date = models.DateField(auto_now_add=True)
     is_active = models.BooleanField(
@@ -108,9 +129,9 @@ class Enrollment(models.Model):
         db_table = 'enrollments'
         verbose_name = 'Enrollment'
         verbose_name_plural = 'Enrollments'
-        # Each student can only be enrolled once per academic year in a section
-        unique_together = [['student', 'school_class', 'section', 'academic_year']]
-        ordering = ['academic_year', 'section', 'roll_number']
+        ordering = ['-academic_session__start_date', 'section', 'roll_number']
 
     def __str__(self):
-        return f"{self.student.user.get_full_name()} - {self.school_class.name} ({self.academic_year})"
+        session_name = self.academic_session.name if self.academic_session else self.academic_year
+        return f"{self.student.user.get_full_name()} - {self.school_class.name} ({session_name})"
+

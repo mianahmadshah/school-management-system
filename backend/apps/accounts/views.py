@@ -153,8 +153,42 @@ class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         today_attendance = Attendance.objects.filter(date=today)
         total_today = today_attendance.count()
         present_today = today_attendance.filter(status='PRESENT').count()
+        absent_today = today_attendance.filter(status='ABSENT').count()
+        late_today = today_attendance.filter(status='LATE').count()
         context['attendance_percentage'] = f"{int((present_today / total_today) * 100)}%" if total_today > 0 else "N/A"
         
+        # Fee stats
+        from apps.fees.models import FeeInvoice
+        invoices = FeeInvoice.objects.all()
+        pending_inv = invoices.filter(status__in=['UNPAID', 'PARTIAL', 'OVERDUE'])
+        context['pending_fees_count'] = pending_inv.count()
+        context['total_pending_amount'] = sum(inv.balance_due for inv in pending_inv) if pending_inv.exists() else 0
+        
+        # Exam stats
+        from apps.examinations.models import Exam
+        context['exams_count'] = Exam.objects.filter(is_active=True).count()
+
+        # Chart Data 1: Student Distribution by Class
+        from django.db.models import Count
+        class_stats = Class.objects.annotate(num_students=Count('students')).values('name', 'num_students')
+        context['class_chart_labels'] = [item['name'] for item in class_stats]
+        context['class_chart_data'] = [item['num_students'] for item in class_stats]
+
+        # Chart Data 2: Attendance Overview
+        context['attendance_present_count'] = present_today if total_today > 0 else Attendance.objects.filter(status='PRESENT').count()
+        context['attendance_absent_count'] = absent_today if total_today > 0 else Attendance.objects.filter(status='ABSENT').count()
+        context['attendance_late_count'] = late_today if total_today > 0 else Attendance.objects.filter(status='LATE').count()
+
+        # Chart Data 3: Fee Status Summary
+        context['fee_paid_count'] = invoices.filter(status='PAID').count()
+        context['fee_partial_count'] = invoices.filter(status='PARTIAL').count()
+        context['fee_unpaid_count'] = invoices.filter(status__in=['UNPAID', 'OVERDUE']).count()
+
+        # Chart Data 4: Gender Distribution
+        context['gender_male_count'] = Student.objects.filter(gender='MALE').count()
+        context['gender_female_count'] = Student.objects.filter(gender='FEMALE').count()
+        context['gender_other_count'] = Student.objects.filter(gender='OTHER').count()
+
         # Latest activities
         context['activity_logs'] = ActivityLog.objects.select_related('user').order_by('-timestamp')[:5]
         
@@ -269,7 +303,7 @@ class StudentDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
             context['attendance_percentage'] = f"{int((present_days / total_days) * 100)}%" if total_days > 0 else "N/A"
             
             # Pending assignments count
-            context['pending_assignments'] = Assignment.objects.filter(class_name=student.current_class).count()
+            context['pending_assignments'] = Assignment.objects.filter(school_class=student.current_class, is_active=True).count()
             
             # Average grade
             student_results = Result.objects.filter(student=student)
@@ -316,8 +350,8 @@ class StudentDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
             
             # Recent results
             context['recent_results'] = Result.objects.filter(student=student).select_related(
-                'exam', 'subject'
-            ).order_by('-exam__date')[:5]
+                'exam', 'exam__subject'
+            ).order_by('-exam__start_date')[:5]
         
         from apps.announcements.models import Announcement
         context['announcements'] = Announcement.objects.select_related('published_by').order_by('-published_at')[:5]

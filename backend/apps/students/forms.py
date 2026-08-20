@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from .models import Student
-from apps.classes.models import Class, Section
+from .models import Student, StudentAdmission
+from apps.classes.models import Class, Section, AcademicSession
 
 User = get_user_model()
 
@@ -59,3 +59,43 @@ class StudentProfileForm(forms.ModelForm):
             'medical_conditions': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': "Medical details (allergies, etc.)"}),
             'status': forms.Select(attrs={'class': 'form-select'}),
         }
+
+
+class StudentAdmissionForm(forms.ModelForm):
+    class Meta:
+        model = StudentAdmission
+        fields = [
+            'admission_number', 'first_name', 'last_name', 'email', 'phone',
+            'father_name', 'father_phone', 'date_of_birth', 'gender', 'address',
+            'previous_school', 'academic_session', 'school_class', 'section',
+            'admission_fee', 'amount_paid', 'remarks'
+        ]
+        widgets = {
+            'admission_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. ADM2026-001'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email Address'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone'}),
+            'father_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': "Father / Guardian Name"}),
+            'father_phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': "Father / Guardian Phone"}),
+            'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'gender': forms.Select(attrs={'class': 'form-select'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'previous_school': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Previous School (if any)'}),
+            'academic_session': forms.Select(attrs={'class': 'form-select'}),
+            'school_class': forms.Select(attrs={'class': 'form-select'}),
+            'section': forms.Select(attrs={'class': 'form-select'}),
+            'admission_fee': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '10000'}),
+            'amount_paid': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '8000'}),
+            'remarks': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Optional remarks'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['academic_session'].queryset = AcademicSession.objects.filter(is_active=True)
+        self.fields['school_class'].queryset = Class.objects.filter(is_active=True)
+        self.fields['section'].queryset = Section.objects.filter(is_active=True)
+        current = AcademicSession.get_current_session()
+        if current:
+            self.fields['academic_session'].initial = current
+

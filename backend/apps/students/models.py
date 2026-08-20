@@ -192,3 +192,71 @@ class Student(models.Model):
         return today.year - dob.year - (
             (today.month, today.day) < (dob.month, dob.day)
         )
+
+
+class StudentAdmission(models.Model):
+    """
+    Student Admission application and payment tracking.
+    
+    Workflow:
+    Admin receives application -> Registers admission details -> Records initial fee payment
+    (e.g., Rs. 8,000 paid out of Rs. 10,000) -> Generates receipt -> On approval,
+    system automatically creates the Student account, Profile, and active Session Enrollment.
+    """
+    class AdmissionStatus(models.TextChoices):
+        PENDING = 'PENDING', 'Pending Payment'
+        PARTIAL = 'PARTIAL', 'Partially Paid'
+        PAID = 'PAID', 'Fully Paid'
+        APPROVED = 'APPROVED', 'Approved & Enrolled'
+        REJECTED = 'REJECTED', 'Rejected'
+
+    admission_number = models.CharField(max_length=20, unique=True, help_text="Application / Admission Number")
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    father_name = models.CharField(max_length=100)
+    father_phone = models.CharField(max_length=20, blank=True, null=True)
+    date_of_birth = models.DateField()
+    gender = models.CharField(max_length=10, choices=Student.Gender.choices)
+    address = models.TextField()
+    previous_school = models.CharField(max_length=200, blank=True, null=True)
+    
+    academic_session = models.ForeignKey('classes.AcademicSession', on_delete=models.CASCADE, related_name='admissions')
+    school_class = models.ForeignKey('classes.Class', on_delete=models.CASCADE, related_name='admissions')
+    section = models.ForeignKey('classes.Section', on_delete=models.CASCADE, related_name='admissions')
+    admission_date = models.DateField(auto_now_add=True)
+    
+    admission_fee = models.DecimalField(max_digits=10, decimal_places=2, default=10000.00)
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    status = models.CharField(max_length=20, choices=AdmissionStatus.choices, default=AdmissionStatus.PENDING)
+    remarks = models.TextField(blank=True, null=True)
+    
+    created_student = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True, related_name='admission_record')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'student_admissions'
+        verbose_name = 'Student Admission'
+        verbose_name_plural = 'Student Admissions'
+        ordering = ['-admission_date']
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} ({self.admission_number}) - {self.status}"
+
+    @property
+    def balance_due(self):
+        return max(0, self.admission_fee - self.amount_paid)
+
+    def update_payment_status(self):
+        if self.status == self.AdmissionStatus.APPROVED:
+            return
+        if self.amount_paid >= self.admission_fee:
+            self.status = self.AdmissionStatus.PAID
+        elif self.amount_paid > 0:
+            self.status = self.AdmissionStatus.PARTIAL
+        else:
+            self.status = self.AdmissionStatus.PENDING
+        self.save()
+

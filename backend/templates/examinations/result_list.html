@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Results List - EduCore SMS{% endblock %}
+{% block page_title %}Exam Results{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Exam Results</h1>
+        <p class="page-header-subtitle">View and search generated student exam results.</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'generate_result' %}" class="btn btn-primary">
+            <i class="bi bi-gear"></i> Generate Results
+        </a>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="table-header">
+        <div class="table-header-left">
+            <h5 class="table-title">Results</h5>
+            <span class="table-subtitle">{{ results|length }} total</span>
+        </div>
+        <div class="table-header-right">
+            <form method="GET" class="d-flex gap-2">
+                <select name="exam_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Exams</option>
+                    {% for exam in exams %}
+                        <option value="{{ exam.id }}" {% if request.GET.exam_id == exam.id|stringformat:"i" %}selected{% endif %}>{{ exam.name }}</option>
+                    {% endfor %}
+                </select>
+                <select name="class_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Classes</option>
+                    {% for cls in classes %}
+                        <option value="{{ cls.id }}" {% if request.GET.class_id == cls.id|stringformat:"i" %}selected{% endif %}>{{ cls.name }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Class</th>
+                    <th>Exam</th>
+                    <th>Marks Obtained / Total</th>
+                    <th>Percentage</th>
+                    <th>Grade</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if results %}
+                    {% for res in results %}
+                    <tr>
+                        <td>
+                            <div class="name-info">
+                                <span class="name">{{ res.student.full_name }}</span>
+                                <span class="subtitle">Roll: {{ res.student.roll_number }}</span>
+                            </div>
+                        </td>
+                        <td>{{ res.student.current_class.name }}</td>
+                        <td>{{ res.exam.name }}</td>
+                        <td>{{ res.total_marks_obtained }} / {{ res.total_maximum_marks }}</td>
+                        <td>{{ res.percentage|floatformat:1 }}%</td>
+                        <td><strong>{{ res.overall_grade }}</strong></td>
+                        <td>
+                            <span class="badge {% if res.passed %}bg-success{% else %}bg-danger{% endif %} text-white">
+                                {% if res.passed %}Pass{% else %}Fail{% endif %}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'report_card_detail' res.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-printer me-1"></i> Report Card
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="table-empty">
+                                <div class="table-empty-icon"><i class="bi bi-file-earmark-check"></i></div>
+                                <p class="table-empty-text">No results found</p>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

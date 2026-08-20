@@ -1,175 +1,169 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Student Dashboard - EduCore SMS{% endblock %}
-{% block page_title %}My Dashboard{% endblock %}
+{% block title %}Student Portal - School Management System{% endblock %}
+{% block page_title %}Student Overview{% endblock %}
 
 {% block content %}
 <!-- Welcome Banner -->
-<div class="welcome-banner animate-fade-in">
+<div class="welcome-banner animate-fade-in mb-4">
     <div class="welcome-banner-content">
-        <h2>Hey, {{ request.user.first_name }}! 🎓</h2>
-        <p>Here is your academic overview at a glance.</p>
+        <h2>Hey, {{ request.user.first_name|default:request.user.email }}! 🎓</h2>
+        <p>Track your academic attendance, upcoming classes, assignments, and exam results.</p>
     </div>
-    <i class="bi bi-mortarboard welcome-banner-icon"></i>
+    <i class="bi bi-mortarboard-fill welcome-banner-icon"></i>
 </div>
 
-<!-- Student Stats -->
-<div class="stats-row mb-4">
-    <div class="stat-item animate-fade-in-up delay-1">
-        <div class="stat-item-header">
-            <div class="stat-item-icon primary">
-                <i class="bi bi-calendar-check"></i>
+<!-- Student Overview Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stats-card animate-fade-in-up delay-1">
+            <div class="stats-card-header">
+                <div class="stats-card-icon primary"><i class="bi bi-calendar-check-fill"></i></div>
+                <span class="badge bg-primary-soft text-primary font-weight-medium">Attendance</span>
+            </div>
+            <div class="stats-card-label">Attendance Rate</div>
+            <h3 class="stats-card-value">{{ attendance_percentage|default:"N/A" }}</h3>
+            <div class="stats-card-footer">
+                <a href="{% url 'my_attendance' %}" class="text-primary text-decoration-none small">View Log →</a>
             </div>
         </div>
-        <div class="stat-item-value">{{ attendance_percentage|default:"N/A" }}</div>
-        <div class="stat-item-label">Attendance Rate</div>
     </div>
 
-    <div class="stat-item animate-fade-in-up delay-2">
-        <div class="stat-item-header">
-            <div class="stat-item-icon success">
-                <i class="bi bi-award"></i>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stats-card animate-fade-in-up delay-2">
+            <div class="stats-card-header">
+                <div class="stats-card-icon success"><i class="bi bi-award-fill"></i></div>
+                <span class="badge bg-success-soft text-success font-weight-medium">Academics</span>
+            </div>
+            <div class="stats-card-label">Average Grade</div>
+            <h3 class="stats-card-value">{{ average_grade|default:"N/A" }}</h3>
+            <div class="stats-card-footer">
+                <a href="{% url 'my_results' %}" class="text-success text-decoration-none small">View Marksheets →</a>
             </div>
         </div>
-        <div class="stat-item-value">{{ average_grade|default:"N/A" }}</div>
-        <div class="stat-item-label">Average Grade</div>
     </div>
 
-    <div class="stat-item animate-fade-in-up delay-3">
-        <div class="stat-item-header">
-            <div class="stat-item-icon warning">
-                <i class="bi bi-file-earmark-text"></i>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stats-card animate-fade-in-up delay-3">
+            <div class="stats-card-header">
+                <div class="stats-card-icon warning"><i class="bi bi-file-earmark-text-fill"></i></div>
+                <span class="badge bg-warning-soft text-warning font-weight-medium">Homework</span>
+            </div>
+            <div class="stats-card-label">Active Assignments</div>
+            <h3 class="stats-card-value">{{ pending_assignments|default:"0" }}</h3>
+            <div class="stats-card-footer">
+                <a href="{% url 'assignment_list' %}" class="text-warning text-decoration-none small">Assignments →</a>
             </div>
         </div>
-        <div class="stat-item-value">{{ pending_assignments|default:"0" }}</div>
-        <div class="stat-item-label">Pending Assignments</div>
-    </div>
-</div>
-
-<!-- Stats Grid -->
-<div class="stats-grid">
-    <div class="stats-card animate-fade-in-up delay-1">
-        <div class="stats-card-header">
-            <div class="stats-card-icon primary"><i class="bi bi-calendar-check"></i></div>
-        </div>
-        <div class="stats-card-label">Attendance Rate</div>
-        <h3 class="stats-card-value">{{ attendance_percentage|default:"N/A" }}</h3>
     </div>
 
-    <div class="stats-card animate-fade-in-up delay-2">
-        <div class="stats-card-header">
-            <div class="stats-card-icon success"><i class="bi bi-award"></i></div>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stats-card animate-fade-in-up delay-4">
+            <div class="stats-card-header">
+                <div class="stats-card-icon info"><i class="bi bi-bell-fill"></i></div>
+                <span class="badge bg-info-soft text-info font-weight-medium">Notices</span>
+            </div>
+            <div class="stats-card-label">New Notices</div>
+            <h3 class="stats-card-value">{{ new_announcements|default:"0" }}</h3>
+            <div class="stats-card-footer">
+                <a href="{% url 'announcement_list' %}" class="text-info text-decoration-none small">Announcements →</a>
+            </div>
         </div>
-        <div class="stats-card-label">Average Grade</div>
-        <h3 class="stats-card-value">{{ average_grade|default:"N/A" }}</h3>
-    </div>
-
-    <div class="stats-card animate-fade-in-up delay-3">
-        <div class="stats-card-header">
-            <div class="stats-card-icon warning"><i class="bi bi-file-earmark-text"></i></div>
-        </div>
-        <div class="stats-card-label">Pending Assignments</div>
-        <h3 class="stats-card-value">{{ pending_assignments|default:"0" }}</h3>
-    </div>
-
-    <div class="stats-card animate-fade-in-up delay-4">
-        <div class="stats-card-header">
-            <div class="stats-card-icon info"><i class="bi bi-megaphone"></i></div>
-        </div>
-        <div class="stats-card-label">New Announcements</div>
-        <h3 class="stats-card-value">{{ new_announcements|default:"0" }}</h3>
     </div>
 </div>
 
-<!-- Two Column: Upcoming & Announcements -->
-<div class="dashboard-row dashboard-grid-2">
-    <!-- Upcoming Schedule -->
-    <div class="card h-100">
-        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-            <h5 class="card-header-title">Today's Schedule</h5>
-            <a href="{% url 'my_timetable' %}" class="btn btn-ghost btn-sm">Full Timetable</a>
-        </div>
-        <div class="card-body pt-0">
-            {% if today_schedule %}
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Period</th>
-                                <th>Subject</th>
-                                <th>Teacher</th>
-                                <th>Time</th>
-                                <th>Room</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for period in today_schedule %}
-                            <tr>
-                                <td>{{ period.period_number }}</td>
-                                <td><span class="badge badge-primary">{{ period.subject }}</span></td>
-                                <td>{{ period.teacher }}</td>
-                                <td>{{ period.start_time|time:"g:i A" }}</td>
-                                <td>{{ period.room }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <div class="empty-state">
-                    <div class="empty-state-icon"><i class="bi bi-calendar"></i></div>
-                    <h6 class="empty-state-title">No classes today</h6>
-                    <p class="empty-state-description">You have no classes scheduled for today.</p>
-                </div>
-            {% endif %}
+<!-- Schedule & Notices Grid -->
+<div class="row g-3 mb-4">
+    <!-- Today's Schedule -->
+    <div class="col-12 col-lg-7">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="card-title m-0 font-weight-bold">Today's Class Schedule</h5>
+                <a href="{% url 'my_timetable' %}" class="btn btn-link btn-sm text-primary p-0 text-decoration-none">Full Timetable →</a>
+            </div>
+            <div class="card-body pt-0">
+                {% if today_schedule %}
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Period</th>
+                                    <th>Subject</th>
+                                    <th>Teacher</th>
+                                    <th>Time</th>
+                                    <th>Room</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for period in today_schedule %}
+                                <tr>
+                                    <td><span class="badge bg-secondary">Period {{ period.period_number }}</span></td>
+                                    <td><strong class="text-dark">{{ period.subject }}</strong></td>
+                                    <td class="small text-muted">{{ period.teacher }}</td>
+                                    <td class="small text-dark"><i class="bi bi-clock me-1 text-muted"></i>{{ period.start_time|time:"g:i A" }}</td>
+                                    <td><span class="badge bg-light text-dark border">{{ period.room }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-calendar-check text-muted fs-1 mb-2 d-block"></i>
+                        <h6 class="text-dark font-weight-semibold">No classes scheduled today</h6>
+                        <p class="text-muted small mb-0">Enjoy your study break or review past coursework.</p>
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 
     <!-- Recent Announcements -->
-    <div class="card h-100">
-        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-            <h5 class="card-header-title">Latest Announcements</h5>
-            <a href="{% url 'announcement_list' %}" class="btn btn-ghost btn-sm">View All</a>
-        </div>
-        <div class="card-body pt-0">
-            {% if announcements %}
-                {% for announcement in announcements|slice:":5" %}
-                    <div class="announcement-card">
-                        <div class="announcement-card-header">
-                            <h6 class="announcement-card-title">{{ announcement.title }}</h6>
-                            <span class="announcement-card-date">{{ announcement.created_at|date:"M d" }}</span>
+    <div class="col-12 col-lg-5">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="card-title m-0 font-weight-bold">School Announcements</h5>
+                <a href="{% url 'announcement_list' %}" class="btn btn-link btn-sm text-primary p-0 text-decoration-none">View All →</a>
+            </div>
+            <div class="card-body pt-0">
+                {% if announcements %}
+                    {% for announcement in announcements %}
+                        <div class="p-3 mb-2 rounded-3 bg-light border-start border-3 border-info">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="m-0 font-weight-semibold text-dark small">{{ announcement.title }}</h6>
+                                <small class="text-muted" style="font-size: 0.7rem;">{{ announcement.created_at|date:"M d" }}</small>
+                            </div>
+                            <p class="text-secondary small mb-0">{{ announcement.content|truncatechars:90 }}</p>
                         </div>
-                        <p class="announcement-card-text">{{ announcement.content|truncatechars:100 }}</p>
-                        <div class="announcement-card-author">By {{ announcement.published_by.get_full_name|default:"Admin" }}</div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-megaphone text-muted fs-1 mb-2 d-block"></i>
+                        <h6 class="text-dark font-weight-semibold">No announcements</h6>
+                        <p class="text-muted small mb-0">There are no school notices at this time.</p>
                     </div>
-                {% endfor %}
-            {% else %}
-                <div class="empty-state">
-                    <div class="empty-state-icon"><i class="bi bi-megaphone"></i></div>
-                    <h6 class="empty-state-title">No announcements</h6>
-                    <p class="empty-state-description">There are no announcements at this time.</p>
-                </div>
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Recent Results -->
-<div class="card">
+<!-- Recent Exam Results -->
+<div class="card border-0 shadow-sm">
     <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-        <h5 class="card-header-title">Recent Results</h5>
-        <a href="{% url 'my_results' %}" class="btn btn-ghost btn-sm">View All</a>
+        <h5 class="card-title m-0 font-weight-bold">Recent Exam Results</h5>
+        <a href="{% url 'my_results' %}" class="btn btn-link btn-sm text-primary p-0 text-decoration-none">View All Results →</a>
     </div>
     <div class="card-body pt-0">
         {% if recent_results %}
             <div class="table-responsive">
-                <table class="table">
-                    <thead>
+                <table class="table align-middle">
+                    <thead class="table-light">
                         <tr>
-                            <th>Exam</th>
+                            <th>Exam Name</th>
                             <th>Subject</th>
-                            <th>Marks</th>
+                            <th>Marks Obtained</th>
                             <th>Grade</th>
                             <th>Status</th>
                         </tr>
@@ -177,21 +171,29 @@
                     <tbody>
                         {% for result in recent_results %}
                         <tr>
-                            <td>{{ result.exam }}</td>
-                            <td>{{ result.subject }}</td>
-                            <td>{{ result.marks_obtained }}/{{ result.total_marks }}</td>
-                            <td><span class="badge badge-{% if result.grade == 'A' or result.grade == 'A+' %}success{% elif result.grade == 'B' or result.grade == 'B+' %}primary{% elif result.grade == 'C' or result.grade == 'C+' %}warning{% else %}danger{% endif %}">{{ result.grade }}</span></td>
-                            <td><span class="badge badge-{% if result.status == 'Pass' %}success{% else %}danger{% endif %}">{{ result.status }}</span></td>
+                            <td><strong class="text-dark">{{ result.exam.name }}</strong></td>
+                            <td>{% if result.subject %}{{ result.subject.name }}{% elif result.exam and result.exam.subject %}{{ result.exam.subject.name }}{% else %}—{% endif %}</td>
+                            <td><strong class="text-primary">{{ result.obtained_marks }}</strong> / {{ result.total_marks }}</td>
+                            <td>
+                                <span class="badge bg-primary-soft text-primary font-weight-bold">{{ result.grade|default:"A" }}</span>
+                            </td>
+                            <td>
+                                {% if result.is_passed or result.status == 'Pass' %}
+                                    <span class="badge bg-success-soft text-success"><i class="bi bi-check-circle me-1"></i>Passed</span>
+                                {% else %}
+                                    <span class="badge bg-danger-soft text-danger"><i class="bi bi-x-circle me-1"></i>Needs Improvement</span>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         {% else %}
-            <div class="empty-state">
-                <div class="empty-state-icon"><i class="bi bi-journal-text"></i></div>
-                <h6 class="empty-state-title">No results yet</h6>
-                <p class="empty-state-description">Your exam results will appear here once published.</p>
+            <div class="text-center py-5">
+                <i class="bi bi-journal-text text-muted fs-1 mb-2 d-block"></i>
+                <h6 class="text-dark font-weight-semibold">No exam results published yet</h6>
+                <p class="text-muted small mb-0">Your exam evaluation reports will appear here once published by teachers.</p>
             </div>
         {% endif %}
     </div>

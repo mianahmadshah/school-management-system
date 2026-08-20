@@ -12,8 +12,8 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 
-from .models import Teacher
-from .forms import TeacherUserForm, TeacherUserEditForm, TeacherProfileForm
+from .models import Teacher, TeacherAllocation
+from .forms import TeacherUserForm, TeacherUserEditForm, TeacherProfileForm, TeacherAllocationForm
 
 # DRF Imports for backward compatibility
 from rest_framework import viewsets, status, filters
@@ -283,3 +283,70 @@ class TeacherViewSet(viewsets.ModelViewSet):
         teacher_name = teacher.full_name
         teacher.user.delete()
         return Response({'message': f'Teacher {teacher_name} and their account have been deleted.'}, status=status.HTTP_200_OK)
+
+
+# ─────────────────────────────────────────────────────────────
+# TEACHER ALLOCATION VIEWS
+# ─────────────────────────────────────────────────────────────
+
+class TeacherAllocationListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = TeacherAllocation
+    template_name = 'teachers/allocation_list.html'
+    context_object_name = 'allocations'
+    paginate_by = 15
+
+    def test_func(self):
+        return self.request.user.role == User.Role.ADMIN
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+
+    def get_queryset(self):
+        qs = TeacherAllocation.objects.select_related(
+            'academic_session', 'teacher__user', 'school_class', 'section', 'subject'
+        ).all()
+        session_id = self.request.GET.get('session_id')
+        if session_id:
+            qs = qs.filter(academic_session_id=session_id)
+        teacher_id = self.request.GET.get('teacher_id')
+        if teacher_id:
+            qs = qs.filter(teacher_id=teacher_id)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from apps.classes.models import AcademicSession
+        context['sessions'] = AcademicSession.objects.all()
+        context['teachers'] = Teacher.objects.filter(status='ACTIVE').select_related('user')
+        return context
+
+
+class TeacherAllocationCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = TeacherAllocation
+    form_class = TeacherAllocationForm
+    template_name = 'teachers/allocation_form.html'
+    success_url = reverse_lazy('teacher_allocation_list')
+
+    def test_func(self):
+        return self.request.user.role == User.Role.ADMIN
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, f'Allocation for {self.object.teacher.full_name} to {self.object.school_class.name}-{self.object.section.name} ({self.object.subject.name}) created successfully.')
+        return response
+
+
+class TeacherAllocationDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = TeacherAllocation
+    template_name = 'teachers/allocation_confirm_delete.html'
+    success_url = reverse_lazy('teacher_allocation_list')
+
+    def test_func(self):
+        return self.request.user.role == User.Role.ADMIN
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+

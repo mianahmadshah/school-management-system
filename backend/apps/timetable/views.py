@@ -136,10 +136,40 @@ class TimetableCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return context
 
     def form_valid(self, form):
-        # Ensure the entry is active by default (the checkbox is not rendered in the template)
         form.instance.is_active = True
+        teacher = form.cleaned_data.get('teacher')
+        period = form.cleaned_data.get('period')
+        day_of_week = form.cleaned_data.get('day_of_week')
+        section = form.cleaned_data.get('section')
+        school_class = form.cleaned_data.get('school_class')
+
+        # 1. Teacher Conflict Check
+        teacher_conflict = Timetable.objects.filter(
+            teacher=teacher,
+            period=period,
+            day_of_week=day_of_week,
+            is_active=True
+        ).exclude(pk=form.instance.pk).first()
+
+        if teacher_conflict:
+            form.add_error(None, f"Teacher Conflict: {teacher.full_name} is already assigned to {teacher_conflict.section} during {period.name} on {day_of_week}.")
+            return self.form_invalid(form)
+
+        # 2. Section Schedule Conflict Check
+        section_conflict = Timetable.objects.filter(
+            school_class=school_class,
+            section=section,
+            period=period,
+            day_of_week=day_of_week,
+            is_active=True
+        ).exclude(pk=form.instance.pk).first()
+
+        if section_conflict:
+            form.add_error(None, f"Schedule Conflict: {section} already has {section_conflict.subject.name} scheduled during {period.name} on {day_of_week}.")
+            return self.form_invalid(form)
+
         response = super().form_valid(form)
-        messages.success(self.request, 'Timetable entry created.')
+        messages.success(self.request, 'Timetable entry created with zero conflicts.')
         return response
 
 

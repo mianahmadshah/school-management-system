@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Session Closing & Student Promotion - School ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 font-weight-bold text-slate-800 mb-1">Session Closing & Student Promotion Console</h1>
+        <p class="text-muted fs-7 mb-0">Evaluate student performance in <strong>{{ current_session.name }}</strong> and promote passed students to the next academic session.</p>
+    </div>
+    <a href="{% url 'session_list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Sessions
+    </a>
+</div>
+
+<form method="post" action="{% url 'session_promotion' %}">
+    {% csrf_token %}
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4 bg-light rounded-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <label class="form-label font-weight-semibold text-slate-700">Target Academic Session for Promotion</label>
+                    <select name="target_session_id" class="form-select" required>
+                        <option value="">--- Select Target Next Session ---</option>
+                        {% for ns in next_sessions %}
+                            {% if ns.pk != current_session.pk %}
+                                <option value="{{ ns.pk }}">{{ ns.name }} (Start: {{ ns.start_date }})</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 text-end pt-3 pt-md-0">
+                    <button type="submit" class="btn btn-success btn-lg shadow-sm font-weight-bold px-4">
+                        <i class="bi bi-rocket-takeoff me-2"></i> Execute Promotion & Transition
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light border-bottom text-muted fs-7 text-uppercase fw-semibold">
+                        <tr>
+                            <th class="ps-4" style="width: 40px;">
+                                <input type="checkbox" class="form-check-input" onclick="document.querySelectorAll('.student-check').forEach(c => c.checked = this.checked)">
+                            </th>
+                            <th>Student Name</th>
+                            <th>Current Class & Section</th>
+                            <th>Exam Average %</th>
+                            <th>Attendance Rate</th>
+                            <th>Fee Dues</th>
+                            <th>Result Status</th>
+                            <th class="pe-4">Promotion Decision</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y fs-6">
+                        {% for item in enrollment_details %}
+                        <tr>
+                            <td class="ps-4">
+                                <input type="checkbox" name="enrollment_ids" value="{{ item.enrollment.pk }}" class="form-check-input student-check" checked>
+                            </td>
+                            <td class="fw-bold text-slate-800">
+                                {{ item.enrollment.student.full_name }}
+                                <div class="fs-8 text-muted fw-normal">{{ item.enrollment.student.admission_number }}</div>
+                            </td>
+                            <td>{{ item.enrollment.school_class.name }} - {{ item.enrollment.section.name }}</td>
+                            <td>
+                                <span class="fw-bold {% if item.avg_percentage >= 50 %}text-success{% else %}text-danger{% endif %}">
+                                    {{ item.avg_percentage }}%
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">{{ item.attendance_pct }}%</span>
+                            </td>
+                            <td>
+                                {% if item.fee_balance > 0 %}
+                                    <span class="text-danger fw-semibold">Rs. {{ item.fee_balance }}</span>
+                                {% else %}
+                                    <span class="text-success"><i class="bi bi-check-circle me-1"></i> Clear</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.passed and item.avg_percentage >= 40 %}
+                                    <span class="badge bg-success-subtle text-success px-2.5 py-1 rounded-pill">Passed</span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger px-2.5 py-1 rounded-pill">Failed</span>
+                                {% endif %}
+                            </td>
+                            <td class="pe-4">
+                                <select name="decision_{{ item.enrollment.pk }}" class="form-select form-select-sm">
+                                    <option value="PROMOTED" {% if item.suggested_status == 'PROMOTED' %}selected{% endif %}>Promote to Next Class</option>
+                                    <option value="REPEATING" {% if item.suggested_status == 'REPEATING' %}selected{% endif %}>Repeat Class</option>
+                                </select>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i class="bi bi-people text-secondary display-6 d-block mb-2"></i>
+                                No enrolled students found for session {{ current_session.name }}.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

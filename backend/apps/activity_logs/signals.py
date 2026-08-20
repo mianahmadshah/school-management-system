@@ -129,11 +129,11 @@ def log_attendance_marked(sender, instance, created, **kwargs):
     if created:
         try:
             ActivityLog.log(
-                user=instance.marked_by.user if instance.marked_by else None,
+                user=instance.marked_by,
                 action=ActivityLog.ActionType.MARK_ATTENDANCE,
                 model_name='Attendance',
                 object_id=instance.id,
-                object_repr=f"{instance.student.user.get_full_name()} - {instance.attendance_date}",
+                object_repr=f"{instance.student.user.get_full_name()} - {instance.date}",
                 description=f"Attendance marked for {instance.student.user.get_full_name()}: {instance.get_status_display()}"
             )
         except Exception as e:
@@ -159,7 +159,7 @@ def log_marks_submission(sender, instance, created, update_fields=None, **kwargs
                 model_name='Marks',
                 object_id=instance.id,
                 object_repr=f"{instance.student.user.get_full_name()} - {instance.exam.name}",
-                description=f"Marks assigned: {instance.student.user.get_full_name()} - {instance.exam.name} ({instance.marks_obtained}/{instance.exam.total_marks})"
+                description=f"Marks assigned: {instance.student.user.get_full_name()} - {instance.exam.name} ({instance.obtained_marks}/{instance.exam.total_marks})"
             )
     except Exception as e:
         logger.error(f"Error logging marks: {e}")

@@ -180,8 +180,8 @@ class MarksEntryView(LoginRequiredMixin, UserPassesTestMixin, FormView):
         return context
 
     def form_valid(self, form):
-        exam_id = form.cleaned_data['exam']
-        subject_id = form.cleaned_data['subject']
+        exam = form.cleaned_data['exam']
+        subject = form.cleaned_data['subject']
         student_ids = self.request.POST.getlist('student_ids')
         obtained_marks = self.request.POST.getlist('obtained_marks')
         practical_marks = self.request.POST.getlist('practical_marks')
@@ -196,9 +196,9 @@ class MarksEntryView(LoginRequiredMixin, UserPassesTestMixin, FormView):
             remarks = remarks_list[i] if i < len(remarks_list) else ''
             
             Marks.objects.update_or_create(
-                exam_id=exam_id,
+                exam=exam,
                 student_id=student_id,
-                subject_id=subject_id,
+                subject=subject,
                 defaults={
                     'obtained_marks': obt,
                     'practical_marks': pract or 0,
@@ -376,6 +376,43 @@ class StudentResultView(LoginRequiredMixin, UserPassesTestMixin, ListView):
             for result in context['results']:
                 result.marks_details = Marks.objects.filter(exam=result.exam, student=student).select_related('subject')
         return context
+
+
+class PrintableReportCardView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    """
+    Renders a clean printable Report Card for a student.
+    Includes Student Info, Attendance %, Subject Marks, Total Marks, Percentage, Grade, and Pass/Fail Result.
+    """
+    model = Result
+    template_name = 'examinations/report_card.html'
+    context_object_name = 'result'
+
+    def test_func(self):
+        user = self.request.user
+        if user.role in [User.Role.ADMIN, User.Role.TEACHER]:
+            return True
+        result_obj = self.get_object()
+        return hasattr(user, 'student_profile') and user.student_profile.pk == result_obj.student.pk
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        result = self.object
+        student = result.student
+        
+        marks_list = Marks.objects.filter(exam=result.exam, student=student).select_related('subject')
+        context['marks_list'] = marks_list
+        
+        from apps.attendance.models import Attendance
+        att_total = Attendance.objects.filter(student=student).count()
+        att_present = Attendance.objects.filter(student=student, status='PRESENT').count()
+        context['attendance_pct'] = round((att_present / att_total * 100), 1) if att_total > 0 else 100
+        context['total_working_days'] = att_total
+        context['days_present'] = att_present
+        return context
+
 
 
 # ─────────────────────────────────────────────────────────────

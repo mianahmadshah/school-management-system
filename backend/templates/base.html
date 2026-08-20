@@ -20,6 +20,9 @@
     <!-- Main Stylesheet -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
     
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -55,6 +58,16 @@
                         </a>
                     </li>
                     <li class="sidebar-nav-item">
+                        <a class="sidebar-nav-link {% if 'sessions' in request.path or 'session-closing' in request.path %}active{% endif %}" href="{% url 'session_list' %}">
+                            <i class="bi bi-calendar-range"></i> <span>Academic Sessions</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a class="sidebar-nav-link {% if 'admissions' in request.path %}active{% endif %}" href="{% url 'admission_list' %}">
+                            <i class="bi bi-person-plus"></i> <span>Admissions & Receipts</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
                         <a class="sidebar-nav-link {% if 'students' in request.path %}active{% endif %}" href="{% url 'student_list' %}" aria-current="{% if 'students' in request.path %}page{% endif %}">
                             <i class="bi bi-people-fill"></i> <span>Students</span>
                         </a>
@@ -62,6 +75,11 @@
                     <li class="sidebar-nav-item">
                         <a class="sidebar-nav-link {% if 'teachers' in request.path %}active{% endif %}" href="{% url 'teacher_list' %}" aria-current="{% if 'teachers' in request.path %}page{% endif %}">
                             <i class="bi bi-person-video3"></i> <span>Teachers</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a class="sidebar-nav-link {% if 'teacher-allocations' in request.path %}active{% endif %}" href="{% url 'teacher_allocation_list' %}">
+                            <i class="bi bi-person-workspace"></i> <span>Teacher Allocations</span>
                         </a>
                     </li>
                     <li class="sidebar-nav-item">
@@ -121,7 +139,7 @@
                         </a>
                     </li>
                     <li class="sidebar-nav-item">
-                        <a class="sidebar-nav-link {% if 'timetable' in request.path and 'my' in request.path %}active{% endif %}" href="{% url 'my_timetable' %}">
+                        <a class="sidebar-nav-link {% if 'timetable' in request.path %}active{% endif %}" href="{% url 'teacher_timetable' %}">
                             <i class="bi bi-calendar3"></i> <span>My Timetable</span>
                         </a>
                     </li>

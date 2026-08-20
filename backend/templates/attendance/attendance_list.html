@@ -102,7 +102,7 @@
                         {% endif %}
                     </td>
                     <td>{{ record.remarks|default:"—" }}</td>
-                    <td><small style="color: var(--color-text-tertiary);">{{ record.marked_by.get_full_name|default:record.marked_by.email }}</small></td>
+                    <td><small style="color: var(--color-text-tertiary);">{% if record.marked_by %}{{ record.marked_by.get_full_name|default:record.marked_by.email }}{% else %}System{% endif %}</small></td>
                 </tr>
                 {% empty %}
                 <tr>

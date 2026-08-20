@@ -115,7 +115,7 @@ class FeeStructureListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return redirect('unauthorized')
 
     def get_queryset(self):
-        qs = FeeStructure.objects.filter(is_active=True).select_related('school_class', 'category')
+        qs = FeeStructure.objects.filter(is_active=True).select_related('school_class', 'category').order_by('school_class_id', 'id')
         class_id = self.request.GET.get('class_id', '')
         if class_id:
             qs = qs.filter(school_class_id=class_id)
@@ -259,8 +259,81 @@ class RecordPaymentView(LoginRequiredMixin, UserPassesTestMixin, FormView):
         payment.invoice = invoice
         payment.collected_by = self.request.user
         payment.save()
-        messages.success(self.request, f'Payment of {payment.amount} recorded.')
+
+        # Recalculate invoice amount_paid and update status
+        total_collected = sum(p.amount for p in invoice.payments.all())
+        invoice.amount_paid = total_collected
+        invoice.update_status()
+
+        messages.success(self.request, f'Payment of Rs. {payment.amount} recorded for invoice {invoice.invoice_number}.')
         return redirect('invoice_detail', pk=invoice.pk)
+
+
+class GenerateClassInvoicesView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    """
+    Bulk generates monthly fee invoices for all active enrollments in a selected class & academic session.
+    """
+    template_name = 'fees/generate_invoices.html'
+
+    def test_func(self):
+        return self.request.user.role == User.Role.ADMIN
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from apps.classes.models import AcademicSession
+        context['classes'] = Class.objects.filter(is_active=True)
+        context['categories'] = FeeCategory.objects.filter(is_active=True)
+        context['sessions'] = AcademicSession.objects.filter(is_active=True)
+        context['current_session'] = AcademicSession.get_current_session()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        from apps.classes.models import AcademicSession
+        from apps.subjects.models import Enrollment
+        import random
+
+        class_id = request.POST.get('class_id')
+        category_id = request.POST.get('category_id')
+        due_date = request.POST.get('due_date')
+        amount_input = request.POST.get('amount')
+        session_id = request.POST.get('session_id')
+
+        school_class = get_object_or_404(Class, pk=class_id)
+        session = AcademicSession.objects.filter(pk=session_id).first() or AcademicSession.get_current_session()
+        category = FeeCategory.objects.filter(pk=category_id).first()
+
+        amount = float(amount_input) if amount_input else (category.default_amount if category else 5000.0)
+
+        enrollments = Enrollment.objects.filter(
+            school_class=school_class,
+            academic_session=session,
+            is_active=True
+        ).select_related('student')
+
+        generated_count = 0
+        for enr in enrollments:
+            rand_num = random.randint(1000, 9999)
+            inv_no = f"INV-{school_class.name.replace(' ', '')}-{timezone.now().strftime('%Y%m%d')}-{rand_num}"
+            
+            FeeInvoice.objects.create(
+                student=enr.student,
+                academic_session=session,
+                academic_year=session.name,
+                invoice_number=inv_no,
+                due_date=due_date or (timezone.now() + timezone.timedelta(days=15)).date(),
+                total_amount=amount,
+                amount_paid=0,
+                status='UNPAID',
+                remarks=f"Monthly Fee ({category.name if category else 'Tuition Fee'}) - {session.name}"
+            )
+            generated_count += 1
+
+        messages.success(request, f"Successfully generated {generated_count} fee invoices for {school_class.name} ({session.name}).")
+        return redirect('invoice_list')
+
 
 
 # ─────────────────────────────────────────────────────────────

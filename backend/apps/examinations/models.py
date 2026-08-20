@@ -23,7 +23,14 @@ class Exam(models.Model):
 
     name = models.CharField(
         max_length=150,
-        help_text="e.g. Midterm Fall 2024"
+        help_text="e.g. Midterm Fall 2026"
+    )
+    academic_session = models.ForeignKey(
+        'classes.AcademicSession',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='exams'
     )
     exam_type = models.CharField(
         max_length=20,

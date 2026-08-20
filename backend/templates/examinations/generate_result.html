@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Generate Results - EduCore SMS{% endblock %}
+{% block page_title %}Generate Results{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Generate Results</h1>
+        <p class="page-header-subtitle">Batch process and compile final scores, percentages, and grades for a class.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card shadow-sm p-4">
+            <h5 class="card-title mb-4">Select Exam and Class</h5>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Exam</label>
+                    <select name="exam_id" class="form-select" required>
+                        <option value="">--- Select Exam ---</option>
+                        {% for exam in exams %}
+                            <option value="{{ exam.id }}">{{ exam.name }} ({{ exam.subject.name|default:"General" }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Class</label>
+                    <select name="class_id" class="form-select" required>
+                        <option value="">--- Select Class ---</option>
+                        {% for cls in classes %}
+                            <option value="{{ cls.id }}">{{ cls.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-gear-fill"></i> Compile and Generate
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

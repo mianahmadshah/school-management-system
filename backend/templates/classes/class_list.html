@@ -1,134 +1,152 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Classes - EduCore SMS{% endblock %}
-{% block page_title %}Class Management{% endblock %}
+{% block title %}Class Management - School Management System{% endblock %}
+{% block page_title %}Academic Classes{% endblock %}
 
 {% block content %}
-<div class="page-header">
+<!-- Header Bar -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
     <div>
-        <h2>Class Management</h2>
-        <p class="page-header-subtitle">Manage all academic classes and sections</p>
+        <h4 class="m-0 font-weight-bold text-dark">Class Directory</h4>
+        <small class="text-muted">Manage academic grades, sections, and class teacher allocations.</small>
     </div>
-    <div class="page-header-actions">
-        <a href="{% url 'section_create' %}" class="btn btn-outline-primary">
-            <i class="bi bi-plus-circle"></i> Add Section
+    <div class="d-flex gap-2">
+        <a href="{% url 'section_create' %}" class="btn btn-outline-primary shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> Add Section
         </a>
-        <a href="{% url 'class_create' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Add Class
+        <a href="{% url 'class_create' %}" class="btn btn-primary shadow-sm">
+            <i class="bi bi-building-add me-1"></i> Add Class
         </a>
     </div>
 </div>
 
-<!-- Search & Filter -->
-<div class="filter-bar">
-    <form method="GET" class="row g-3">
-        <div class="col-md-6">
-            <div class="input-icon-wrapper">
-                <i class="bi bi-search"></i>
-                <input type="text" name="q" class="form-control" placeholder="Search classes..." value="{{ request.GET.q }}">
+<!-- Search Card -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3">
+        <form method="GET" class="row g-2 align-items-center">
+            <div class="col-12 col-md-9">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control border-start-0" placeholder="Search class name, grade..." value="{{ request.GET.q|default:'' }}">
+                </div>
             </div>
-        </div>
-        <div class="col-md-6 d-flex gap-2">
-            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Search</button>
-            {% if request.GET.q %}
-                <a href="{% url 'class_list' %}" class="btn btn-outline-secondary">Clear</a>
-            {% endif %}
-        </div>
-    </form>
+            <div class="col-12 col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i> Search</button>
+                {% if request.GET.q %}
+                    <a href="{% url 'class_list' %}" class="btn btn-light border"><i class="bi bi-x-circle"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
 </div>
 
-<!-- Classes Table -->
-<div class="table-container">
-    <div class="table-header">
-        <div class="table-header-left">
-            <h5 class="table-title">All Classes</h5>
-            <span class="table-subtitle">{{ classes|length }} total</span>
+<!-- Classes Table Card -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-dark">Active Classes</h6>
+        <span class="badge bg-primary-soft text-primary font-weight-semibold">{{ classes|length }} Class{{ classes|length|pluralize:"es" }}</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table align-middle table-hover m-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Class Name</th>
+                        <th>Grade Level</th>
+                        <th>Sections</th>
+                        <th>Class Teacher</th>
+                        <th>Status</th>
+                        <th class="text-end pe-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if classes %}
+                        {% for class_obj in classes %}
+                        <tr>
+                            <td class="ps-3">
+                                <a href="{% url 'class_detail' class_obj.pk %}" class="text-dark font-weight-bold text-decoration-none d-block">
+                                    <i class="bi bi-building text-primary me-2"></i>{{ class_obj.name }}
+                                </a>
+                            </td>
+                            <td>
+                                {% if class_obj.numeric_grade %}
+                                    <span class="badge bg-light text-dark border">Grade {{ class_obj.numeric_grade }}</span>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-info-soft text-info font-weight-semibold">
+                                    {{ class_obj.sections.count }} Section{{ class_obj.sections.count|pluralize }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if class_obj.class_teacher %}
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-person-badge text-success me-2"></i>
+                                        <span class="text-dark small font-weight-medium">{{ class_obj.class_teacher.full_name }}</span>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted small">Not Assigned</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if class_obj.is_active %}
+                                    <span class="badge bg-success-soft text-success"><i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i>Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary text-muted">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-3">
+                                <div class="dropdown">
+                                    <button class="btn btn-light btn-sm rounded-circle border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots-vertical text-muted"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                        <li><a class="dropdown-item py-2" href="{% url 'class_detail' class_obj.pk %}"><i class="bi bi-eye text-primary me-2"></i> View Details</a></li>
+                                        <li><a class="dropdown-item py-2" href="{% url 'class_update' class_obj.pk %}"><i class="bi bi-pencil text-warning me-2"></i> Edit Class</a></li>
+                                        <li><hr class="dropdown-divider m-0"></li>
+                                        <li><a class="dropdown-item py-2 text-danger" href="{% url 'class_delete' class_obj.pk %}"><i class="bi bi-trash me-2"></i> Delete Class</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <i class="bi bi-building text-muted fs-1 mb-2 d-block"></i>
+                                <h6 class="text-dark font-weight-semibold">No classes found</h6>
+                                <p class="text-muted small mb-3">Add your first academic class to get started.</p>
+                                <a href="{% url 'class_create' %}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-plus-circle me-1"></i> Add Class
+                                </a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
         </div>
     </div>
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Class Name</th>
-                    <th>Grade Level</th>
-                    <th>Sections</th>
-                    <th>Class Teacher</th>
-                    <th>Status</th>
-                    <th class="text-end">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for class_obj in classes %}
-                <tr>
-                    <td>
-                        <a href="{% url 'class_detail' class_obj.pk %}" class="text-decoration-none fw-semibold" style="color: var(--color-primary);">
-                            {{ class_obj.name }}
-                        </a>
-                    </td>
-                    <td>
-                        {% if class_obj.numeric_grade %}
-                            Grade {{ class_obj.numeric_grade }}
-                        {% else %}
-                            <span style="color: var(--color-text-tertiary);">—</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <span class="badge badge-info">{{ class_obj.sections.count }} section{{ class_obj.sections.count|pluralize }}</span>
-                    </td>
-                    <td>
-                        {% if class_obj.class_teacher %}
-                            {{ class_obj.class_teacher.full_name }}
-                        {% else %}
-                            <span style="color: var(--color-text-tertiary);">Not assigned</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if class_obj.is_active %}
-                            <span class="badge-status badge-status-active">Active</span>
-                        {% else %}
-                            <span class="badge-status badge-status-inactive">Inactive</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div class="table-cell-actions">
-                            <a href="{% url 'class_detail' class_obj.pk %}" class="btn btn-icon btn-sm btn-ghost" title="View"><i class="bi bi-eye"></i></a>
-                            <a href="{% url 'class_update' class_obj.pk %}" class="btn btn-icon btn-sm btn-ghost" title="Edit"><i class="bi bi-pencil"></i></a>
-                            <a href="{% url 'class_delete' class_obj.pk %}" class="btn btn-icon btn-sm btn-ghost text-danger" title="Delete"><i class="bi bi-trash"></i></a>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6">
-                        <div class="table-empty">
-                            <div class="table-empty-icon"><i class="bi bi-building"></i></div>
-                            <p class="table-empty-text">No classes found</p>
-                            <p class="table-empty-subtext">Get started by adding your first class.</p>
-                            <a href="{% url 'class_create' %}" class="btn btn-primary btn-sm">Add First Class</a>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% if is_paginated %}
-    <div class="table-footer">
-        <div class="table-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
-        <div class="table-actions">
-            <nav><ul class="pagination pagination-sm mb-0">
+    {% if is_paginated and page_obj %}
+    <div class="card-footer bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+        <small class="text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</small>
+        <nav aria-label="Class pagination">
+            <ul class="pagination pagination-sm m-0">
                 {% if page_obj.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"><i class="bi bi-chevron-double-left"></i></a></li>
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"><i class="bi bi-chevron-left"></i></a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}"><i class="bi bi-chevron-left"></i></a></li>
                 {% endif %}
-                <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
                 {% if page_obj.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"><i class="bi bi-chevron-right"></i></a></li>
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"><i class="bi bi-chevron-double-right"></i></a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}"><i class="bi bi-chevron-right"></i></a></li>
                 {% endif %}
-            </ul></nav>
-        </div>
+            </ul>
+        </nav>
     </div>
     {% endif %}
 </div>

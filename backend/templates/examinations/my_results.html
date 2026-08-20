@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Results - EduCore SMS{% endblock %}
+{% block page_title %}My Exam Results{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">My Exam Results</h1>
+        <p class="page-header-subtitle">Performance report cards and marks breakdown.</p>
+    </div>
+</div>
+
+<div class="row">
+    {% if results %}
+        {% for result in results %}
+        <div class="col-md-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">{{ result.exam.name }}</h5>
+                        <small class="text-muted">Compiled on {{ result.created_at|date:"M d, Y" }}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge {% if result.passed %}bg-success{% else %}bg-danger{% endif %} text-white fs-6">
+                            Grade: {{ result.overall_grade }} ({% if result.passed %}Pass{% else %}Fail{% endif %})
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="text-muted">Marks Obtained</div>
+                            <h3>{{ result.total_marks_obtained }} / {{ result.total_maximum_marks }}</h3>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-muted">Percentage</div>
+                            <h3>{{ result.percentage|floatformat:1 }}%</h3>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-muted">Remarks</div>
+                            <p class="mt-1">{{ result.remarks }}</p>
+                        </div>
+                    </div>
+                    
+                    <h6 class="border-bottom pb-2 mb-3">Marks Breakdown</h6>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Obtained Marks</th>
+                                <th>Total Marks</th>
+                                <th>Passed</th>
+                                <th>Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detail in result.marks_details %}
+                            <tr>
+                                <td>{{ detail.subject.name }}</td>
+                                <td>{{ detail.obtained_marks }}</td>
+                                <td>{{ detail.total_marks }}</td>
+                                <td>
+                                    <span class="badge {% if detail.is_passed %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %}">
+                                        {% if detail.is_passed %}Yes{% else %}No{% endif %}
+                                    </span>
+                                </td>
+                                <td>{{ detail.grade }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No marks breakdown details available.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-md-12">
+            <div class="card text-center p-5 shadow-sm">
+                <div class="display-1 text-muted"><i class="bi bi-file-earmark-lock"></i></div>
+                <h4 class="mt-3">No Results Released</h4>
+                <p class="text-muted">Results have not been generated/released for your account yet.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

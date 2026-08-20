@@ -12,8 +12,8 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 
-from .models import Student
-from .forms import StudentUserForm, StudentUserEditForm, StudentProfileForm
+from .models import Student, StudentAdmission
+from .forms import StudentUserForm, StudentUserEditForm, StudentProfileForm, StudentAdmissionForm
 from apps.classes.models import Class, Section
 
 # DRF Imports for backward compatibility
@@ -287,3 +287,148 @@ class StudentViewSet(viewsets.ModelViewSet):
         student_name = student.full_name
         student.user.delete()
         return Response({'message': f'Student {student_name} and their account have been deleted.'}, status=status.HTTP_200_OK)
+
+
+# ─────────────────────────────────────────────────────────────
+# STUDENT ADMISSION VIEWS
+# ─────────────────────────────────────────────────────────────
+
+class StudentAdmissionListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = StudentAdmission
+    template_name = 'students/admission_list.html'
+    context_object_name = 'admissions'
+    paginate_by = 15
+
+    def test_func(self):
+        return self.request.user.role == User.Role.ADMIN
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+
+
+class StudentAdmissionCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = StudentAdmission
+    form_class = StudentAdmissionForm
+    template_name = 'students/admission_form.html'
+    success_url = reverse_lazy('admission_list')
+
+    def test_func(self):
+        return self.request.user.role == User.Role.ADMIN
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+
+    def form_valid(self, form):
+        from django.db import transaction
+        with transaction.atomic():
+            admission = form.save(commit=False)
+            admission.update_payment_status()
+            admission.save()
+
+            messages.success(
+                self.request,
+                f"Admission application registered for {admission.first_name} {admission.last_name}. "
+                f"Paid: Rs. {admission.amount_paid} out of Rs. {admission.admission_fee}. Balance: Rs. {admission.balance_due}."
+            )
+            return redirect('admission_receipt', pk=admission.pk)
+
+
+class StudentAdmissionApproveView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    model = StudentAdmission
+
+    def test_func(self):
+        return self.request.user.role == User.Role.ADMIN
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+
+    def post(self, request, *args, **kwargs):
+        from django.db import transaction
+        from apps.subjects.models import Enrollment
+        from apps.fees.models import FeeInvoice, FeePayment
+        adm = self.get_object()
+
+        if adm.status == StudentAdmission.AdmissionStatus.APPROVED:
+            messages.info(request, "Student admission is already approved and enrolled.")
+            return redirect('admission_list')
+
+        with transaction.atomic():
+            user = User.objects.create_user(
+                username=adm.email,
+                email=adm.email,
+                first_name=adm.first_name,
+                last_name=adm.last_name,
+                phone=adm.phone,
+                role=User.Role.STUDENT,
+                password='StudentPassword123'
+            )
+
+            student = Student.objects.create(
+                user=user,
+                admission_number=adm.admission_number,
+                current_class=adm.school_class,
+                section=adm.section,
+                admission_date=adm.admission_date,
+                date_of_birth=adm.date_of_birth,
+                gender=adm.gender,
+                address=adm.address,
+                father_name=adm.father_name,
+                father_phone=adm.father_phone,
+                status=Student.Status.ACTIVE
+            )
+
+            Enrollment.objects.create(
+                student=student,
+                school_class=adm.school_class,
+                section=adm.section,
+                academic_session=adm.academic_session,
+                academic_year=adm.academic_session.name,
+                status='ENROLLED',
+                is_active=True
+            )
+
+            inv_number = f"INV-ADM-{adm.admission_number}"
+            invoice = FeeInvoice.objects.create(
+                student=student,
+                academic_session=adm.academic_session,
+                academic_year=adm.academic_session.name,
+                invoice_number=inv_number,
+                due_date=adm.admission_date,
+                total_amount=adm.admission_fee,
+                amount_paid=adm.amount_paid,
+                status='PAID' if adm.amount_paid >= adm.admission_fee else ('PARTIAL' if adm.amount_paid > 0 else 'UNPAID'),
+                remarks="Admission Fee"
+            )
+
+            if adm.amount_paid > 0:
+                FeePayment.objects.create(
+                    invoice=invoice,
+                    amount=adm.amount_paid,
+                    payment_method='CASH',
+                    reference_number=f"REC-{adm.admission_number}",
+                    remarks="Initial Admission Fee Payment",
+                    collected_by=request.user
+                )
+
+            adm.status = StudentAdmission.AdmissionStatus.APPROVED
+            adm.created_student = student
+            adm.save()
+
+        messages.success(
+            request,
+            f"Admission APPROVED! Account created for {student.full_name}. Credentials: {adm.email} / StudentPassword123."
+        )
+        return redirect('student_detail', pk=student.pk)
+
+
+class AdmissionReceiptView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    model = StudentAdmission
+    template_name = 'students/admission_receipt.html'
+    context_object_name = 'admission'
+
+    def test_func(self):
+        return self.request.user.role in [User.Role.ADMIN, User.Role.TEACHER]
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+

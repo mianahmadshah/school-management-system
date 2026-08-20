@@ -1,36 +1,34 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Teachers - EduCore SMS{% endblock %}
-{% block page_title %}Teacher Management{% endblock %}
+{% block title %}Teacher Directory - School Management System{% endblock %}
+{% block page_title %}Faculty Directory{% endblock %}
 
 {% block content %}
-<div class="page-header">
+<!-- Header Bar -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
     <div>
-        <h2>Teacher Directory</h2>
-        <p class="page-header-subtitle">Manage and search all teacher records</p>
+        <h4 class="m-0 font-weight-bold text-dark">Faculty Directory</h4>
+        <small class="text-muted">Manage teacher profiles, department assignments, and specializations.</small>
     </div>
-    <div class="page-header-actions">
-        <a href="{% url 'teacher_create' %}" class="btn btn-primary">
-            <i class="bi bi-person-plus-fill"></i> Add New Teacher
+    <div>
+        <a href="{% url 'teacher_create' %}" class="btn btn-primary d-inline-flex align-items-center shadow-sm">
+            <i class="bi bi-person-plus-fill me-2"></i> Register New Teacher
         </a>
     </div>
 </div>
 
-<!-- Search & Filters Card -->
-<div class="filter-bar mb-4">
-    <form method="get" class="row g-3 align-items-end">
-        <!-- Search Text -->
-        <div class="col-md-4">
-            <label for="q" class="form-label fw-semibold text-secondary" style="font-size: 0.85rem;">Search Teacher</label>
-            <div class="input-icon-wrapper">
-                <i class="bi bi-search"></i>
-                <input type="text" name="q" id="q" class="form-control" placeholder="Name, employee ID, specialization..." value="{{ request.GET.q }}">
+<!-- Search & Filter Card -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-12 col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" id="q" class="form-control border-start-0" placeholder="Search by name, employee ID, specialization..." value="{{ request.GET.q|default:'' }}">
+                </div>
             </div>
-        </div>
-
-            <!-- Department Filter -->
-            <div class="col-md-2">
-                <label for="department" class="form-label fw-semibold text-secondary" style="font-size: 0.85rem;">Department</label>
+            <div class="col-12 col-md-3">
                 <select name="department" id="department" class="form-select">
                     <option value="">All Departments</option>
                     {% for dept in departments %}
@@ -38,134 +36,140 @@
                     {% endfor %}
                 </select>
             </div>
-
-            <!-- Employment Type Filter -->
-            <div class="col-md-2">
-                <label for="employment_type" class="form-label fw-semibold text-secondary" style="font-size: 0.85rem;">Employment Type</label>
-                <select name="employment_type" id="employment_type" class="form-select">
-                    <option value="">All Types</option>
-                    <option value="FULL_TIME" {% if request.GET.employment_type == 'FULL_TIME' %}selected{% endif %}>Full Time</option>
-                    <option value="PART_TIME" {% if request.GET.employment_type == 'PART_TIME' %}selected{% endif %}>Part Time</option>
-                    <option value="CONTRACT" {% if request.GET.employment_type == 'CONTRACT' %}selected{% endif %}>Contract</option>
-                    <option value="VISITING" {% if request.GET.employment_type == 'VISITING' %}selected{% endif %}>Visiting</option>
-                </select>
-            </div>
-
-            <!-- Status Filter -->
-            <div class="col-md-2">
-                <label for="status" class="form-label fw-semibold text-secondary" style="font-size: 0.85rem;">Status</label>
+            <div class="col-12 col-md-3">
                 <select name="status" id="status" class="form-select">
                     <option value="">All Statuses</option>
                     <option value="ACTIVE" {% if request.GET.status == 'ACTIVE' %}selected{% endif %}>Active</option>
-                    <option value="INACTIVE" {% if request.GET.status == 'INACTIVE' %}selected{% endif %}>Inactive</option>
                     <option value="ON_LEAVE" {% if request.GET.status == 'ON_LEAVE' %}selected{% endif %}>On Leave</option>
+                    <option value="INACTIVE" {% if request.GET.status == 'INACTIVE' %}selected{% endif %}>Inactive</option>
                 </select>
             </div>
-
-            <!-- Action Buttons -->
-            <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-primary w-100 py-2"><i class="bi bi-funnel-fill me-1"></i> Filter</button>
-                <a href="{% url 'teacher_list' %}" class="btn btn-light border w-100 py-2"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
+            <div class="col-12 col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+                {% if request.GET.q or request.GET.department or request.GET.status %}
+                    <a href="{% url 'teacher_list' %}" class="btn btn-light border"><i class="bi bi-x-circle"></i></a>
+                {% endif %}
             </div>
         </form>
     </div>
 </div>
 
-<!-- Teachers List -->
-<div class="table-container">
-    <div class="table-header">
-        <div class="table-header-left">
-            <h5 class="table-title">Teacher Directory</h5>
-            <span class="table-subtitle">{{ teachers|length }} total</span>
-        </div>
+<!-- Table Card -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-dark">Registered Teachers</h6>
+        <span class="badge bg-primary-soft text-primary font-weight-semibold">{{ teachers|length }} Faculty Member{% if teachers|length != 1 %}s{% endif %}</span>
     </div>
-    <div class="table-responsive">
-            <table class="table align-middle m-0 data-table">
-                <thead>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table align-middle table-hover m-0" id="teachersTable">
+                <thead class="table-light">
                     <tr>
-                        <th>Teacher</th>
+                        <th class="ps-3">Teacher Name</th>
                         <th>Employee ID</th>
                         <th>Department</th>
                         <th>Specialization</th>
-                        <th>Status</th>
                         <th>Employment</th>
-                        <th class="text-end">Actions</th>
+                        <th>Status</th>
+                        <th class="text-end pe-3">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for teacher in teachers %}
+                    {% if teachers %}
+                        {% for teacher in teachers %}
                         <tr>
-                        <td>
-                            <div class="table-cell-name">
-                                {% if teacher.photo %}
-                                    <img src="{{ teacher.photo.url }}" alt="Photo" class="avatar avatar-sm" style="border-radius: 50%; object-fit: cover;">
-                                {% else %}
-                                    <div class="avatar avatar-sm">{{ teacher.user.first_name|slice:":1"|upper }}{{ teacher.user.last_name|slice:":1"|upper }}</div>
-                                {% endif %}
-                                <div class="name-info">
-                                    <span class="name">{{ teacher.user.get_full_name }}</span>
-                                    <span class="subtitle">{{ teacher.user.email }}</span>
+                            <td class="ps-3">
+                                <div class="d-flex align-items-center">
+                                    {% if teacher.photo %}
+                                        <img src="{{ teacher.photo.url }}" alt="{{ teacher.user.get_full_name }}" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="avatar bg-success-soft text-success rounded-circle me-3 d-flex align-items-center justify-content-center font-weight-bold" style="width: 40px; height: 40px; font-size: 0.9rem;">
+                                            {{ teacher.user.first_name|slice:":1"|upper }}{{ teacher.user.last_name|slice:":1"|upper }}
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <a href="{% url 'teacher_detail' teacher.pk %}" class="text-dark font-weight-semibold text-decoration-none d-block">
+                                            {% if teacher.user %}{{ teacher.user.get_full_name }}{% else %}Teacher #{{ teacher.pk }}{% endif %}
+                                        </a>
+                                        <small class="text-muted" style="font-size: 0.75rem;">{% if teacher.user %}{{ teacher.user.email }}{% else %}No user attached{% endif %}</small>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td><span class="badge badge-secondary">{{ teacher.employee_id }}</span></td>
-                        <td>{{ teacher.department|default:"—" }}</td>
-                        <td>{{ teacher.specialization|default:"—" }}</td>
-                        <td>
-                            {% if teacher.status == 'ACTIVE' %}
-                                <span class="badge-status badge-status-active">Active</span>
-                            {% elif teacher.status == 'ON_LEAVE' %}
-                                <span class="badge-status badge-status-pending">On Leave</span>
-                            {% else %}
-                                <span class="badge-status badge-status-inactive">{{ teacher.status }}</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ teacher.get_employment_type_display }}</td>
-                        <td>
-                            <div class="table-cell-actions">
-                                <a href="{% url 'teacher_detail' teacher.pk %}" class="btn btn-icon btn-sm btn-ghost" title="View details" aria-label="View {{ teacher.user.get_full_name }}"><i class="bi bi-eye"></i></a>
-                                <a href="{% url 'teacher_update' teacher.pk %}" class="btn btn-icon btn-sm btn-ghost" title="Edit Profile" aria-label="Edit {{ teacher.user.get_full_name }}"><i class="bi bi-pencil"></i></a>
-                                <a href="{% url 'teacher_delete' teacher.pk %}" class="btn btn-icon btn-sm btn-ghost text-danger" title="Delete Profile" aria-label="Delete {{ teacher.user.get_full_name }}"><i class="bi bi-trash"></i></a>
-                            </div>
-                        </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="7">
-                                <div class="table-empty">
-                                    <div class="table-empty-icon"><i class="bi bi-people"></i></div>
-                                    <p class="table-empty-text">No teachers found</p>
-                                    <p class="table-empty-subtext">No teacher records match the search query.</p>
-                                    <a href="{% url 'teacher_create' %}" class="btn btn-primary btn-sm">
-                                        <i class="bi bi-person-plus"></i> Add Teacher
-                                    </a>
+                            </td>
+                            <td><code class="text-dark font-weight-semibold">{{ teacher.employee_id }}</code></td>
+                            <td><span class="badge bg-light text-dark border font-weight-medium">{{ teacher.department|default:"—" }}</span></td>
+                            <td>{{ teacher.specialization|default:"—" }}</td>
+                            <td><span class="text-muted small">{{ teacher.get_employment_type_display|default:teacher.employment_type|default:"Full Time" }}</span></td>
+                            <td>
+                                {% if teacher.status == 'ACTIVE' %}
+                                    <span class="badge bg-success-soft text-success"><i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i>Active</span>
+                                {% elif teacher.status == 'ON_LEAVE' %}
+                                    <span class="badge bg-warning-soft text-warning"><i class="bi bi-clock me-1"></i>On Leave</span>
+                                {% else %}
+                                    <span class="badge bg-secondary text-muted"><i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i>Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-3">
+                                <div class="dropdown">
+                                    <button class="btn btn-light btn-sm rounded-circle border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots-vertical text-muted"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow">
+                                        <li>
+                                            <a class="dropdown-item py-2" href="{% url 'teacher_detail' teacher.pk %}">
+                                                <i class="bi bi-eye text-primary me-2"></i> View Profile
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item py-2" href="{% url 'teacher_update' teacher.pk %}">
+                                                <i class="bi bi-pencil text-warning me-2"></i> Edit Profile
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider m-0"></li>
+                                        <li>
+                                            <a class="dropdown-item py-2 text-danger" href="{% url 'teacher_delete' teacher.pk %}">
+                                                <i class="bi bi-trash me-2"></i> Delete Teacher
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </div>
                             </td>
                         </tr>
-                    {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <i class="bi bi-person-badge text-muted fs-1 mb-2 d-block"></i>
+                                <h6 class="text-dark font-weight-semibold">No teachers found</h6>
+                                <p class="text-muted small mb-3">No faculty records match your filter criteria.</p>
+                                <a href="{% url 'teacher_create' %}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-person-plus me-1"></i> Add Teacher
+                                </a>
+                            </td>
+                        </tr>
+                    {% endif %}
                 </tbody>
+            </table>
+        </div>
     </div>
     
-    {% if is_paginated %}
-    <div class="table-footer">
-        <div class="table-info">
-            Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ paginator.count }} entries
-        </div>
-        <div class="table-actions">
-            <nav>
-                <ul class="pagination pagination-sm m-0">
-                    {% if page_obj.has_previous %}
-                        <li class="page-item"><a class="page-link" href="?page=1&{{ query_params }}"><i class="bi bi-chevron-double-left"></i></a></li>
-                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ query_params }}"><i class="bi bi-chevron-left"></i></a></li>
-                    {% endif %}
-                    <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
-                    {% if page_obj.has_next %}
-                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ query_params }}"><i class="bi bi-chevron-right"></i></a></li>
-                        <li class="page-item"><a class="page-link" href="?page={{ paginator.num_pages }}&{{ query_params }}"><i class="bi bi-chevron-double-right"></i></a></li>
-                    {% endif %}
-                </ul>
-            </nav>
-        </div>
+    {% if is_paginated and page_obj %}
+    <div class="card-footer bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+        <small class="text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</small>
+        <nav aria-label="Teacher list pagination">
+            <ul class="pagination pagination-sm m-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}"><i class="bi bi-chevron-left"></i></a></li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}"><i class="bi bi-chevron-right"></i></a></li>
+                {% endif %}
+            </ul>
+        </nav>
     </div>
     {% endif %}
 </div>

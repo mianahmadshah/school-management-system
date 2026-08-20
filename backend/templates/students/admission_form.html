@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}New Student Admission Application - School ERP{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mb-5">
+    <div class="col-lg-9">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'admission_list' %}" class="btn btn-sm btn-light border rounded-circle me-3 p-2">
+                <i class="bi bi-arrow-left fs-6"></i>
+            </a>
+            <div>
+                <h1 class="h3 font-weight-bold text-slate-800 mb-0">Student Admission & Registration</h1>
+                <p class="text-muted fs-7 mb-0">Fill out student credentials, class assignment, and admission fee details.</p>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4 p-md-5">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <h5 class="font-weight-bold text-slate-800 border-bottom pb-2 mb-3">1. Academic & Session Setup</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-semibold text-slate-700">Application Number</label>
+                            {{ form.admission_number }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-semibold text-slate-700">Academic Session</label>
+                            {{ form.academic_session }}
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label font-weight-semibold text-slate-700">Applied Class</label>
+                            {{ form.school_class }}
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label font-weight-semibold text-slate-700">Section</label>
+                            {{ form.section }}
+                        </div>
+                    </div>
+
+                    <h5 class="font-weight-bold text-slate-800 border-bottom pb-2 mb-3 mt-4">2. Personal & Guardian Details</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-semibold text-slate-700">First Name</label>
+                            {{ form.first_name }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-semibold text-slate-700">Last Name</label>
+                            {{ form.last_name }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-semibold text-slate-700">Email Address</label>
+                            {{ form.email }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-semibold text-slate-700">Father / Guardian Name</label>
+                            {{ form.father_name }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-semibold text-slate-700">Father Phone</label>
+                            {{ form.father_phone }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-semibold text-slate-700">Date of Birth</label>
+                            {{ form.date_of_birth }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-semibold text-slate-700">Gender</label>
+                            {{ form.gender }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-semibold text-slate-700">Phone</label>
+                            {{ form.phone }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-semibold text-slate-700">Previous School</label>
+                            {{ form.previous_school }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label font-weight-semibold text-slate-700">Residential Address</label>
+                        {{ form.address }}
+                    </div>
+
+                    <h5 class="font-weight-bold text-slate-800 border-bottom pb-2 mb-3 mt-4 text-primary">3. Admission Fee & Payment Ledger</h5>
+                    <div class="row mb-3 bg-light p-3 rounded-3">
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-semibold text-slate-700">Total Admission Fee Charged (Rs.)</label>
+                            {{ form.admission_fee }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-semibold text-slate-700">Amount Paid Now (Rs.)</label>
+                            {{ form.amount_paid }}
+                            <div class="form-text">Supports partial payment (e.g., Rs. 8,000 paid out of Rs. 10,000). Remaining balance calculated automatically.</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label font-weight-semibold text-slate-700">Remarks / Special Notes</label>
+                        {{ form.remarks }}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-4">
+                        <a href="{% url 'admission_list' %}" class="btn btn-light px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary btn-lg shadow-sm px-5">Submit Admission & Print Receipt</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

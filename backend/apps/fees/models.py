@@ -53,9 +53,18 @@ class FeeStructure(models.Model):
         on_delete=models.CASCADE,
         related_name='fee_structures'
     )
+    academic_session = models.ForeignKey(
+        'classes.AcademicSession',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='fee_structures'
+    )
     academic_year = models.CharField(
         max_length=20,
-        help_text="e.g. 2023-2024"
+        blank=True,
+        null=True,
+        help_text="e.g. 2026-2027"
     )
     category = models.ForeignKey(
         FeeCategory,
@@ -77,10 +86,10 @@ class FeeStructure(models.Model):
         db_table = 'fee_structures'
         verbose_name = 'Fee Structure'
         verbose_name_plural = 'Fee Structures'
-        unique_together = [['school_class', 'academic_year', 'category']]
 
     def __str__(self):
-        return f"{self.school_class.name} - {self.category.name} ({self.academic_year})"
+        session_name = self.academic_session.name if self.academic_session else self.academic_year
+        return f"{self.school_class.name} - {self.category.name} ({session_name})"
 
 
 class FeeInvoice(models.Model):
@@ -97,9 +106,18 @@ class FeeInvoice(models.Model):
         on_delete=models.CASCADE,
         related_name='fee_invoices'
     )
+    academic_session = models.ForeignKey(
+        'classes.AcademicSession',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='fee_invoices'
+    )
     academic_year = models.CharField(
         max_length=20,
-        help_text="e.g. 2023-2024"
+        blank=True,
+        null=True,
+        help_text="e.g. 2026-2027"
     )
     invoice_number = models.CharField(
         max_length=50,

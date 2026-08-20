@@ -151,3 +151,52 @@ class Teacher(models.Model):
     @property
     def phone(self):
         return self.user.phone
+
+
+class TeacherAllocation(models.Model):
+    """
+    Teacher Allocation maps:
+    Academic Session + Teacher + Class + Section + Subject
+    
+    This fulfills the ERP requirement:
+    One teacher can be allocated to multiple Class-Section-Subject combinations
+    in a given Academic Session.
+    """
+    academic_session = models.ForeignKey(
+        'classes.AcademicSession',
+        on_delete=models.CASCADE,
+        related_name='teacher_allocations'
+    )
+    teacher = models.ForeignKey(
+        Teacher,
+        on_delete=models.CASCADE,
+        related_name='allocations'
+    )
+    school_class = models.ForeignKey(
+        'classes.Class',
+        on_delete=models.CASCADE,
+        related_name='teacher_allocations'
+    )
+    section = models.ForeignKey(
+        'classes.Section',
+        on_delete=models.CASCADE,
+        related_name='teacher_allocations'
+    )
+    subject = models.ForeignKey(
+        'subjects.Subject',
+        on_delete=models.CASCADE,
+        related_name='teacher_allocations'
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'teacher_allocations'
+        verbose_name = 'Teacher Allocation'
+        verbose_name_plural = 'Teacher Allocations'
+        unique_together = [['academic_session', 'school_class', 'section', 'subject']]
+        ordering = ['academic_session', 'school_class', 'section', 'subject']
+
+    def __str__(self):
+        return f"{self.teacher.full_name} -> {self.school_class.name}-{self.section.name} ({self.subject.name}) [{self.academic_session.name}]"
+

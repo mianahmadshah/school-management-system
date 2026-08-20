@@ -12,6 +12,53 @@ from django.db import models
 from django.conf import settings
 
 
+class AcademicSession(models.Model):
+    """
+    Academic Session / Year (e.g. 2026-2027).
+    Controls current active academic period for the entire school ERP.
+    """
+    name = models.CharField(
+        max_length=50,
+        unique=True,
+        help_text="Session name (e.g. 2026-2027, 2027-2028)"
+    )
+    start_date = models.DateField(help_text="Start date of session")
+    end_date = models.DateField(help_text="End date of session")
+    is_current = models.BooleanField(
+        default=False,
+        help_text="Whether this is the current active session. Only one session can be current."
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Active sessions allow new transactions and enrollments."
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'academic_sessions'
+        verbose_name = 'Academic Session'
+        verbose_name_plural = 'Academic Sessions'
+        ordering = ['-start_date']
+
+    def __str__(self):
+        return f"{self.name}{' (Current)' if self.is_current else ''}"
+
+    def save(self, *args, **kwargs):
+        if self.is_current:
+            # Set all other sessions is_current = False
+            AcademicSession.objects.filter(is_current=True).exclude(pk=self.pk).update(is_current=False)
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_current_session(cls):
+        """Helper to get the current active academic session."""
+        session = cls.objects.filter(is_current=True, is_active=True).first()
+        if not session:
+            session = cls.objects.filter(is_active=True).order_by('-start_date').first()
+        return session
+
+
 class Class(models.Model):
     """
     Represents an academic class/grade level.

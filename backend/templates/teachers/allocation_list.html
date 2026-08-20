@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Teacher Allocations - School ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 font-weight-bold text-slate-800 mb-1">Teacher Allocations</h1>
+        <p class="text-muted fs-7 mb-0">Assign teachers to specific Class, Section, and Subject combinations per Academic Session.</p>
+    </div>
+    <a href="{% url 'teacher_allocation_create' %}" class="btn btn-primary shadow-sm fw-medium">
+        <i class="bi bi-plus-lg me-1"></i> New Teacher Allocation
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light border-bottom text-muted fs-7 text-uppercase fw-semibold">
+                    <tr>
+                        <th class="ps-4">Academic Session</th>
+                        <th>Teacher Name</th>
+                        <th>Class & Section</th>
+                        <th>Subject</th>
+                        <th>Status</th>
+                        <th class="pe-4 text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y fs-6">
+                    {% for alloc in allocations %}
+                    <tr>
+                        <td class="ps-4 fw-semibold text-slate-700">{{ alloc.academic_session.name }}</td>
+                        <td class="fw-bold text-slate-800">{{ alloc.teacher.full_name }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ alloc.school_class.name }} - {{ alloc.section.name }}</span></td>
+                        <td class="fw-medium text-primary">{{ alloc.subject.name }} ({{ alloc.subject.code }})</td>
+                        <td>
+                            {% if alloc.is_active %}
+                                <span class="badge bg-success-subtle text-success px-2.5 py-1 rounded-pill">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary px-2.5 py-1 rounded-pill">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="pe-4 text-end">
+                            <a href="{% url 'teacher_allocation_delete' alloc.pk %}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-person-workspace text-secondary display-6 d-block mb-2"></i>
+                            No teacher allocations found. Create one to assign teachers to classes.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

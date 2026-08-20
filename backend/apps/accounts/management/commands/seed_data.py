@@ -1,5 +1,5 @@
 """
-Django management command to seed the database with initial data.
+Django management command to seed the database with initial demo data.
 Run: python manage.py seed_data
 """
 from django.core.management.base import BaseCommand
@@ -8,12 +8,12 @@ from django.utils import timezone
 from datetime import timedelta, date, time
 import random
 
-from apps.classes.models import Class, Section
-from apps.subjects.models import Subject
-from apps.teachers.models import Teacher
-from apps.students.models import Student
+from apps.classes.models import Class, Section, AcademicSession
+from apps.subjects.models import Subject, Enrollment
+from apps.teachers.models import Teacher, TeacherAllocation
+from apps.students.models import Student, StudentAdmission
 from apps.attendance.models import Attendance
-from apps.examinations.models import Exam, Result
+from apps.examinations.models import Exam, Marks, Result
 from apps.fees.models import FeeCategory, FeeStructure, FeeInvoice, FeePayment
 from apps.timetable.models import Period, Timetable
 from apps.announcements.models import Announcement
@@ -22,283 +22,331 @@ from apps.assignments.models import Assignment, Submission
 User = get_user_model()
 
 
+def get_or_create_user(username, email, password, role, **extra):
+    """Create a user OR fetch existing. Password is hashed on creation only."""
+    defaults = {
+        'email': email,
+        'role': role,
+    }
+    defaults.update(extra)
+    user, created = User.objects.get_or_create(username=username, defaults=defaults)
+    if created:
+        user.set_password(password)
+        user.save()
+    return user
+
+
 class Command(BaseCommand):
     help = 'Seeds the database with initial demo data'
 
     def handle(self, *args, **kwargs):
-        self.stdout.write('Seeding database...')
-        
-        # Create superuser
-        if not User.objects.filter(username='admin').exists():
-            admin = User.objects.create_superuser(
-                username='admin',
-                email='admin@educore.edu',
-                password='admin123',
-                role='ADMIN',
-                first_name='Admin',
-                last_name='User'
-            )
-            self.stdout.write(self.style.SUCCESS('Created admin user: admin / admin123'))
-        
-        # Create teachers
-        teachers_data = [
-            {'username': 'teacher1', 'email': 'teacher1@educore.edu', 'password': 'teacher123', 'first_name': 'Ahmed', 'last_name': 'Khan'},
-            {'username': 'teacher2', 'email': 'teacher2@educore.edu', 'password': 'teacher123', 'first_name': 'Sarah', 'last_name': 'Ali'},
-            {'username': 'teacher3', 'email': 'teacher3@educore.edu', 'password': 'teacher123', 'first_name': 'Muhammad', 'last_name': 'Hassan'},
-        ]
-        
-        teachers = []
-        for t_data in teachers_data:
-            if not User.objects.filter(username=t_data['username']).exists():
-                user = User.objects.create_user(
-                    username=t_data['username'],
-                    email=t_data['email'],
-                    password=t_data['password'],
-                    role='TEACHER',
-                    first_name=t_data['first_name'],
-                    last_name=t_data['last_name']
-                )
-                teacher = Teacher.objects.create(
-                    user=user,
-                    phone_number='03001234567',
-                    qualification='Masters',
-                    experience_years=5,
-                    joining_date=date.today() - timedelta(days=365)
-                )
-                teachers.append(teacher)
-                self.stdout.write(self.style.SUCCESS(f'Created teacher: {t_data["username"]}'))
-        
-        if not teachers:
-            teachers = list(Teacher.objects.all())
-        
-        # Create classes and sections
-        classes_data = [
-            {'name': 'Class 9', 'sections': ['A', 'B']},
-            {'name': 'Class 10', 'sections': ['A', 'B']},
-        ]
-        
-        classes = []
-        sections = []
-        for c_data in classes_data:
-            cls, created = Class.objects.get_or_create(name=c_data['name'], defaults={'is_active': True})
-            if created:
-                self.stdout.write(self.style.SUCCESS(f'Created class: {cls.name}'))
-            classes.append(cls)
-            
-            for sec_name in c_data['sections']:
-                section, created = Section.objects.get_or_create(
-                    school_class=cls,
-                    name=sec_name,
-                    defaults={'is_active': True}
-                )
-                if created:
-                    self.stdout.write(self.style.SUCCESS(f'Created section: {cls.name} - {sec_name}'))
-                sections.append(section)
-        
-        if not sections:
-            sections = list(Section.objects.all())
-        
-        # Create subjects
-        subjects_data = [
-            {'name': 'Mathematics', 'code': 'MATH'},
-            {'name': 'Physics', 'code': 'PHY'},
-            {'name': 'Chemistry', 'code': 'CHEM'},
-            {'name': 'English', 'code': 'ENG'},
-            {'name': 'Urdu', 'code': 'URD'},
-        ]
-        
-        subjects = []
-        for s_data in subjects_data:
-            subject, created = Subject.objects.get_or_create(
-                code=s_data['code'],
-                defaults={'name': s_data['name'], 'is_active': True}
-            )
-            if created:
-                self.stdout.write(self.style.SUCCESS(f'Created subject: {subject.name}'))
-            subjects.append(subject)
-        
-        if not subjects:
-            subjects = list(Subject.objects.all())
-        
-        # Create students
-        students_data = [
-            {'username': 'student1', 'admission': 'ADM001', 'first_name': 'Ali', 'last_name': 'Hassan', 'class_idx': 0, 'section_idx': 0},
-            {'username': 'student2', 'admission': 'ADM002', 'first_name': 'Fatima', 'last_name': 'Zahra', 'class_idx': 0, 'section_idx': 0},
-            {'username': 'student3', 'admission': 'ADM003', 'first_name': 'Hassan', 'last_name': 'Ali', 'class_idx': 0, 'section_idx': 1},
-            {'username': 'student4', 'admission': 'ADM004', 'first_name': 'Ayesha', 'last_name': 'Khan', 'class_idx': 1, 'section_idx': 0},
-            {'username': 'student5', 'admission': 'ADM005', 'first_name': 'Usman', 'last_name': 'Ahmed', 'class_idx': 1, 'section_idx': 1},
-        ]
-        
-        students = []
-        for s_data in students_data:
-            if not User.objects.filter(username=s_data['username']).exists():
-                user = User.objects.create_user(
-                    username=s_data['username'],
-                    email=f"{s_data['username']}@educore.edu",
-                    password='student123',
-                    role='STUDENT',
-                    first_name=s_data['first_name'],
-                    last_name=s_data['last_name']
-                )
-                student = Student.objects.create(
-                    user=user,
-                    admission_number=s_data['admission'],
-                    current_class=classes[s_data['class_idx']],
-                    section=sections[s_data['section_idx']],
-                    date_of_birth=date(2008, 1, 1),
-                    gender='MALE' if s_data['first_name'] in ['Ali', 'Hassan', 'Usman'] else 'FEMALE',
-                    blood_group='A+',
-                    address='Islamabad, Pakistan',
-                    is_active=True
-                )
-                students.append(student)
-                self.stdout.write(self.style.SUCCESS(f'Created student: {s_data["username"]}'))
-        
-        if not students:
-            students = list(Student.objects.all())
-        
-        # Create fee categories
-        fee_categories = []
-        for cat_name in ['Tuition', 'Transport', 'Examination']:
-            cat, _ = FeeCategory.objects.get_or_create(name=cat_name, defaults={'is_active': True})
-            fee_categories.append(cat)
-        
-        # Create fee structures
-        for cls in classes:
-            for cat in fee_categories[:1]:  # Tuition for each class
-                FeeStructure.objects.get_or_create(
-                    category=cat,
-                    school_class=cls,
-                    defaults={'amount': 5000.00, 'is_active': True}
-                )
-        
-        # Create fee invoices
-        for student in students:
-            for cls in classes:
-                if student.current_class == cls:
-                    structure = FeeStructure.objects.filter(school_class=cls, category=fee_categories[0]).first()
-                    if structure:
-                        invoice, _ = FeeInvoice.objects.get_or_create(
-                            student=student,
-                            academic_year='2024-25',
-                            category=structure,
-                            defaults={
-                                'total_amount': structure.amount,
-                                'amount_paid': structure.amount * 0.5,
-                                'due_date': date.today() + timedelta(days=30),
-                                'status': 'PARTIAL',
-                                'is_active': True
-                            }
-                        )
-        
-        # Create exams
-        exams = []
-        exam1, _ = Exam.objects.get_or_create(
-            name='Mid-Term Exam',
-            exam_type='MIDTERM',
-            academic_year='2024-25',
+        self.stdout.write('Seeding database with Connected School ERP Lifecycle Data...')
+
+        # ── 1. Create Academic Sessions ──────────────────────
+        session_current, _ = AcademicSession.objects.get_or_create(
+            name='2026-2027',
             defaults={
-                'start_date': date.today() - timedelta(days=30),
-                'end_date': date.today() - timedelta(days=10),
-                'is_published': True
+                'start_date': date(2026, 4, 1),
+                'end_date': date(2027, 3, 31),
+                'is_current': True,
+                'is_active': True
             }
         )
-        exams.append(exam1)
-        
-        # Create results
-        for student in students:
-            for subject in subjects[:3]:
-                marks = random.randint(40, 95)
-                result, _ = Result.objects.get_or_create(
-                    exam=exam1,
-                    student=student,
-                    subject=subject,
+        session_past, _ = AcademicSession.objects.get_or_create(
+            name='2025-2026',
+            defaults={
+                'start_date': date(2025, 4, 1),
+                'end_date': date(2026, 3, 31),
+                'is_current': False,
+                'is_active': True
+            }
+        )
+
+        # ── 2. Create Superuser (Admin) ───────────────────────
+        admin = get_or_create_user(
+            'admin', 'admin@educore.edu', 'admin123', User.Role.ADMIN,
+            first_name='Principal', last_name='Admin'
+        )
+
+        # ── 3. Create Teachers ────────────────────────────────
+        teachers_data = [
+            {'username': 'teacher1', 'email': 'ali.khan@educore.edu', 'first_name': 'Ali', 'last_name': 'Khan', 'spec': 'Mathematics'},
+            {'username': 'teacher2', 'email': 'sara.ahmed@educore.edu', 'first_name': 'Sara', 'last_name': 'Ahmed', 'spec': 'Science'},
+            {'username': 'teacher3', 'email': 'tariq.mahmood@educore.edu', 'first_name': 'Tariq', 'last_name': 'Mahmood', 'spec': 'English'},
+        ]
+        teachers = []
+        for idx, t_data in enumerate(teachers_data, start=1):
+            user = get_or_create_user(
+                t_data['username'], t_data['email'], 'teacher123', User.Role.TEACHER,
+                first_name=t_data['first_name'], last_name=t_data['last_name'], phone=f'0300{idx}234567'
+            )
+            teacher, _ = Teacher.objects.get_or_create(
+                user=user,
+                defaults={
+                    'employee_id': f'EMP{idx:03d}',
+                    'department': 'Academics',
+                    'designation': 'Senior Teacher',
+                    'highest_qualification': 'M.Sc. Education',
+                    'specialization': t_data['spec'],
+                    'experience_years': 6,
+                    'joining_date': date(2022, 1, 1),
+                }
+            )
+            teachers.append(teacher)
+
+        # ── 4. Create Classes & Sections ──────────────────────
+        classes_config = [
+            ('Grade 6', 6, ['A', 'B']),
+            ('Grade 7', 7, ['A', 'B']),
+            ('Grade 8', 8, ['A', 'B']),
+        ]
+        classes_map = {}
+        sections_map = {}
+        for c_name, c_num, sec_names in classes_config:
+            cls, _ = Class.objects.get_or_create(
+                name=c_name,
+                defaults={'numeric_grade': c_num, 'class_teacher': teachers[0], 'is_active': True}
+            )
+            classes_map[c_name] = cls
+            sections_map[c_name] = {}
+            for sec_name in sec_names:
+                sec, _ = Section.objects.get_or_create(
+                    school_class=cls,
+                    name=sec_name,
+                    defaults={'section_teacher': teachers[0], 'room_number': f"Room {c_num}0{sec_name}", 'max_capacity': 40}
+                )
+                sections_map[c_name][sec_name] = sec
+
+        grade6_a = sections_map['Grade 6']['A']
+        grade6_cls = classes_map['Grade 6']
+
+        # ── 5. Create Subjects ────────────────────────────────
+        subjects_data = [
+            ('Mathematics', 'MATH-601', grade6_cls),
+            ('Science', 'SCI-601', grade6_cls),
+            ('English Literature', 'ENG-601', grade6_cls),
+        ]
+        subjects = []
+        for s_name, s_code, s_cls in subjects_data:
+            subj, _ = Subject.objects.get_or_create(
+                code=s_code,
+                defaults={'name': s_name, 'school_class': s_cls, 'teacher': teachers[0], 'is_active': True}
+            )
+            subjects.append(subj)
+
+        # ── 6. Create Teacher Allocations ─────────────────────
+        TeacherAllocation.objects.get_or_create(
+            academic_session=session_current,
+            school_class=grade6_cls,
+            section=grade6_a,
+            subject=subjects[0],
+            defaults={'teacher': teachers[0], 'is_active': True}
+        )
+        TeacherAllocation.objects.get_or_create(
+            academic_session=session_current,
+            school_class=grade6_cls,
+            section=grade6_a,
+            subject=subjects[1],
+            defaults={'teacher': teachers[1], 'is_active': True}
+        )
+
+        # ── 7. Create Student Admissions & Enrollments ────────
+        students_data = [
+            ('student1', 'ADM-2026-001', 'Ahmad', 'Shah', 'ahmad@educore.edu', '8000.00', '10000.00'),
+            ('student2', 'ADM-2026-002', 'Fatima', 'Zahra', 'fatima@educore.edu', '10000.00', '10000.00'),
+            ('student3', 'ADM-2026-003', 'Hassan', 'Ali', 'hassan@educore.edu', '5000.00', '10000.00'),
+        ]
+
+        students = []
+        for username, adm_no, fn, ln, email, paid_val, fee_val in students_data:
+            user = get_or_create_user(
+                username, email, 'student123', User.Role.STUDENT,
+                first_name=fn, last_name=ln
+            )
+            student, _ = Student.objects.get_or_create(
+                user=user,
+                defaults={
+                    'admission_number': adm_no,
+                    'current_class': grade6_cls,
+                    'section': grade6_a,
+                    'admission_date': date(2026, 4, 2),
+                    'date_of_birth': date(2012, 5, 10),
+                    'gender': 'MALE' if fn in ['Ahmad', 'Hassan'] else 'FEMALE',
+                    'father_name': f"{ln} Senior",
+                    'address': 'Islamabad, Pakistan',
+                    'status': 'ACTIVE'
+                }
+            )
+            students.append(student)
+
+            # Active Enrollment for 2026-2027
+            Enrollment.objects.get_or_create(
+                student=student,
+                academic_session=session_current,
+                school_class=grade6_cls,
+                section=grade6_a,
+                defaults={'academic_year': '2026-2027', 'roll_number': adm_no.split('-')[-1], 'status': 'ENROLLED', 'is_active': True}
+            )
+
+            # Admission Record & Initial Payment
+            paid = float(paid_val)
+            fee = float(fee_val)
+            StudentAdmission.objects.get_or_create(
+                admission_number=adm_no,
+                defaults={
+                    'first_name': fn, 'last_name': ln, 'email': email,
+                    'father_name': f"{ln} Senior", 'date_of_birth': date(2012, 5, 10),
+                    'gender': 'MALE' if fn in ['Ahmad', 'Hassan'] else 'FEMALE',
+                    'address': 'Islamabad, Pakistan',
+                    'academic_session': session_current,
+                    'school_class': grade6_cls,
+                    'section': grade6_a,
+                    'admission_fee': fee,
+                    'amount_paid': paid,
+                    'status': 'APPROVED',
+                    'created_student': student
+                }
+            )
+
+            # Fee Invoice & Payment Receipts
+            inv, _ = FeeInvoice.objects.get_or_create(
+                invoice_number=f"INV-ADM-{adm_no}",
+                defaults={
+                    'student': student,
+                    'academic_session': session_current,
+                    'academic_year': '2026-2027',
+                    'due_date': date(2026, 4, 30),
+                    'total_amount': fee,
+                    'amount_paid': paid,
+                    'status': 'PAID' if paid >= fee else ('PARTIAL' if paid > 0 else 'UNPAID'),
+                    'remarks': 'Admission Fee Invoice'
+                }
+            )
+            if paid > 0:
+                FeePayment.objects.get_or_create(
+                    invoice=inv,
                     defaults={
-                        'marks_obtained': marks,
-                        'total_marks': 100,
-                        'is_pass': marks >= 50
+                        'amount': paid,
+                        'payment_method': 'CASH',
+                        'reference_number': f"REC-{adm_no}",
+                        'remarks': 'Initial Payment',
+                        'collected_by': admin
                     }
                 )
-        
-        # Create attendance records
-        for student in students:
-            for day in range(1, 11):
-                att_date = date.today() - timedelta(days=day)
-                if att_date.weekday() < 5:  # Weekdays only
-                    status = random.choice(['PRESENT', 'PRESENT', 'PRESENT', 'ABSENT', 'LATE'])
-                    Attendance.objects.get_or_create(
-                        student=student,
-                        date=att_date,
-                        defaults={'status': status, 'is_active': True}
-                    )
-        
-        # Create periods
+
+        # ── 8. Create Timetable Slots ─────────────────────────
         periods = []
-        for i, (name, start, end, is_break) in enumerate([
+        time_slots = [
             ('1st Period', time(8, 0), time(9, 0), False),
             ('2nd Period', time(9, 0), time(10, 0), False),
             ('Break', time(10, 0), time(10, 30), True),
             ('3rd Period', time(10, 30), time(11, 30), False),
-            ('4th Period', time(11, 30), time(12, 30), False),
-        ]):
-            period, _ = Period.objects.get_or_create(
-                name=name,
-                defaults={'start_time': start, 'end_time': end, 'is_break': is_break, 'order': i}
+        ]
+        for idx, (pname, stime, etime, is_brk) in enumerate(time_slots):
+            p, _ = Period.objects.get_or_create(
+                name=pname,
+                defaults={'start_time': stime, 'end_time': etime, 'is_break': is_brk, 'order': idx}
             )
-            periods.append(period)
-        
-        # Create timetable entries
+            periods.append(p)
+
         days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY']
-        for cls in classes[:1]:
-            for section in sections[:2]:
-                for day in days:
-                    for i, period in enumerate(periods[:4]):
-                        if not period.is_break:
-                            subject = subjects[i % len(subjects)]
-                            teacher = teachers[i % len(teachers)]
-                            Timetable.objects.get_or_create(
-                                school_class=cls,
-                                section=section,
-                                period=period,
-                                day_of_week=day,
-                                defaults={
-                                    'subject': subject,
-                                    'teacher': teacher,
-                                    'is_active': True
-                                }
-                            )
-        
-        # Create announcement
-        Announcement.objects.get_or_create(
-            title='Welcome to New Academic Year',
+        for d in days:
+            Timetable.objects.get_or_create(
+                academic_session=session_current,
+                school_class=grade6_cls,
+                section=grade6_a,
+                period=periods[0],
+                day_of_week=d,
+                defaults={'subject': subjects[0], 'teacher': teachers[0], 'is_active': True}
+            )
+            Timetable.objects.get_or_create(
+                academic_session=session_current,
+                school_class=grade6_cls,
+                section=grade6_a,
+                period=periods[1],
+                day_of_week=d,
+                defaults={'subject': subjects[1], 'teacher': teachers[1], 'is_active': True}
+            )
+
+        # ── 9. Create Daily Attendance ────────────────────────
+        for st in students:
+            for d_offset in range(1, 10):
+                att_date = date.today() - timedelta(days=d_offset)
+                if att_date.weekday() < 5:
+                    Attendance.objects.get_or_create(
+                        student=st,
+                        date=att_date,
+                        defaults={
+                            'school_class': grade6_cls,
+                            'section': grade6_a,
+                            'status': 'PRESENT' if d_offset % 4 != 0 else 'ABSENT',
+                            'marked_by': teachers[0].user
+                        }
+                    )
+
+        # ── 10. Create Assignments ────────────────────────────
+        Assignment.objects.get_or_create(
+            title='Algebra Fundamentals Assignment',
             defaults={
-                'content': 'We are excited to welcome all students and teachers to the new academic year 2024-25. Classes will begin next Monday.',
-                'target_audience': 'ALL',
-                'is_important': True,
-                'is_published': True,
-                'published_by': User.objects.filter(username='admin').first()
+                'description': 'Solve questions 1-10 on page 45 of your Mathematics textbook.',
+                'school_class': grade6_cls,
+                'section': grade6_a,
+                'subject': subjects[0],
+                'teacher': teachers[0],
+                'due_date': timezone.now() + timedelta(days=5),
+                'max_marks': 50,
+                'is_active': True
             }
         )
-        
-        # Create assignment
-        for cls in classes[:1]:
-            for section in sections[:1]:
-                Assignment.objects.get_or_create(
-                    title='Mathematics Homework - Algebra',
-                    defaults={
-                        'description': 'Complete exercise 3.1 from your textbook. Show all steps.',
-                        'school_class': cls,
-                        'section': section,
-                        'subject': subjects[0],
-                        'teacher': teachers[0],
-                        'due_date': timezone.now() + timedelta(days=7),
-                        'max_marks': 20,
-                        'is_active': True
-                    }
-                )
-        
-        self.stdout.write(self.style.SUCCESS('✅ Database seeded successfully!'))
-        self.stdout.write('Default logins:')
-        self.stdout.write('  Admin: admin / admin123')
-        self.stdout.write('  Teachers: teacher1, teacher2, teacher3 / teacher123')
-        self.stdout.write('  Students: student1-5 / student123')
+
+        # ── 11. Create Exams, Marks & Results ─────────────────
+        exam, _ = Exam.objects.get_or_create(
+            name='Midterm Examinations 2026',
+            subject=subjects[0],
+            school_class=grade6_cls,
+            defaults={
+                'academic_session': session_current,
+                'exam_type': 'MIDTERM',
+                'total_marks': 100,
+                'passing_marks': 40,
+                'start_date': date.today() - timedelta(days=15),
+                'end_date': date.today() - timedelta(days=5),
+                'is_published': True,
+                'is_active': True
+            }
+        )
+
+        for st in students:
+            marks_val = random.randint(55, 92)
+            Marks.objects.get_or_create(
+                exam=exam,
+                student=st,
+                subject=subjects[0],
+                defaults={
+                    'total_marks': 100,
+                    'passing_marks': 40,
+                    'obtained_marks': marks_val,
+                    'is_passed': marks_val >= 40,
+                    'submitted_by': teachers[0]
+                }
+            )
+
+            Result.objects.get_or_create(
+                exam=exam,
+                student=st,
+                defaults={
+                    'total_marks_obtained': marks_val,
+                    'total_maximum_marks': 100,
+                    'percentage': marks_val,
+                    'overall_grade': 'A' if marks_val >= 80 else 'B',
+                    'passed': marks_val >= 40,
+                    'remarks': 'Good academic performance'
+                }
+            )
+
+        self.stdout.write(self.style.SUCCESS('[SUCCESS] Connected School ERP Database Seeded Successfully!'))
+        self.stdout.write('Default Logins:')
+        self.stdout.write('  ADMIN:   admin / admin123')
+        self.stdout.write('  TEACHER: teacher1 / teacher123 (Mr. Ali Khan)')
+        self.stdout.write('  STUDENT: student1 / student123 (Ahmad Shah)')
+

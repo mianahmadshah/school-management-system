@@ -1,96 +1,105 @@
-{% extends 'base.html' %}{% load static %}
-{% block title %}Reports - EduCore SMS{% endblock %}
-{% block page_title %}Reports Dashboard{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reports Hub - School Management System{% endblock %}
+{% block page_title %}Reports & Analytics Hub{% endblock %}
+
 {% block content %}
+<!-- Header Bar -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h4 class="m-0 font-weight-bold text-dark">System Analytics & Reports</h4>
+        <small class="text-muted">Executive summaries of attendance, academic progress, and financial collections.</small>
+    </div>
+</div>
+
+<!-- Primary Metrics Row -->
 <div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <h6 class="text-muted mb-1">Total Students</h6>
-                <h3 class="fw-bold mb-0">{{ total_students }}</h3>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stats-card animate-fade-in-up delay-1">
+            <div class="stats-card-header">
+                <div class="stats-card-icon primary"><i class="bi bi-people-fill"></i></div>
+                <span class="badge bg-primary-soft text-primary font-weight-medium">Students</span>
             </div>
+            <div class="stats-card-label">Total Enrolled</div>
+            <h3 class="stats-card-value">{{ total_students|default:"0" }}</h3>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <h6 class="text-muted mb-1">Total Teachers</h6>
-                <h3 class="fw-bold mb-0">{{ total_teachers }}</h3>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stats-card animate-fade-in-up delay-2">
+            <div class="stats-card-header">
+                <div class="stats-card-icon success"><i class="bi bi-person-video3"></i></div>
+                <span class="badge bg-success-soft text-success font-weight-medium">Faculty</span>
             </div>
+            <div class="stats-card-label">Total Faculty</div>
+            <h3 class="stats-card-value">{{ total_teachers|default:"0" }}</h3>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <h6 class="text-muted mb-1">Fee Collected</h6>
-                <h3 class="fw-bold mb-0 text-success">{{ total_fee_collected }}</h3>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stats-card animate-fade-in-up delay-3">
+            <div class="stats-card-header">
+                <div class="stats-card-icon success"><i class="bi bi-cash-stack"></i></div>
+                <span class="badge bg-success-soft text-success font-weight-medium">Revenue</span>
             </div>
+            <div class="stats-card-label">Fee Collected</div>
+            <h3 class="stats-card-value text-success">Rs. {{ total_fee_collected|default:"0" }}</h3>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <h6 class="text-muted mb-1">Fee Pending</h6>
-                <h3 class="fw-bold mb-0 text-danger">{{ total_fee_pending }}</h3>
+
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stats-card animate-fade-in-up delay-4">
+            <div class="stats-card-header">
+                <div class="stats-card-icon danger"><i class="bi bi-wallet2"></i></div>
+                <span class="badge bg-danger-soft text-danger font-weight-medium">Outstanding</span>
             </div>
+            <div class="stats-card-label">Fee Pending</div>
+            <h3 class="stats-card-value text-danger">Rs. {{ total_fee_pending|default:"0" }}</h3>
         </div>
     </div>
 </div>
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <h6 class="text-muted mb-1">Attendance Today</h6>
-                <h3 class="fw-bold mb-0">{{ attendance_today }}</h3>
-                <small class="text-muted">{{ attendance_present }} present</small>
-            </div>
-        </div>
+
+<!-- Report Modules Grid -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3 border-0">
+        <h5 class="card-title m-0 font-weight-bold">Detailed Report Modules</h5>
+        <small class="text-muted">Generate and export specialized school reports</small>
     </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <h6 class="text-muted mb-1">Avg Exam Score</h6>
-                <h3 class="fw-bold mb-0">{{ avg_result|floatformat:1 }}</h3>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <h6 class="text-muted mb-1">Total Classes</h6>
-                <h3 class="fw-bold mb-0">{{ total_classes }}</h3>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="card">
-    <div class="card-header bg-white"><h5 class="mb-0 fw-semibold">Report Types</h5></div>
-    <div class="card-body">
+    <div class="card-body pt-0">
         <div class="row g-3">
-            <div class="col-md-4">
-                <a href="{% url 'report_attendance' %}" class="card text-decoration-none text-dark h-100">
-                    <div class="card-body">
-                        <i class="bi bi-calendar-check text-primary fs-2 mb-2 d-block"></i>
-                        <h6 class="fw-semibold">Attendance Report</h6>
-                        <small class="text-muted">Daily and monthly attendance analytics</small>
+            <div class="col-12 col-md-4">
+                <a href="{% url 'report_attendance' %}" class="card border-0 shadow-sm text-decoration-none h-100 bg-surface-hover transition-all">
+                    <div class="card-body p-4">
+                        <div class="avatar bg-primary-soft text-primary rounded-3 p-3 mb-3 d-inline-block">
+                            <i class="bi bi-calendar-check fs-2"></i>
+                        </div>
+                        <h6 class="font-weight-bold text-dark mb-1">Attendance Report</h6>
+                        <p class="text-muted small mb-0">Daily, monthly, and class-wise attendance rates and summary analytics.</p>
                     </div>
                 </a>
             </div>
-            <div class="col-md-4">
-                <a href="{% url 'report_academic' %}" class="card text-decoration-none text-dark h-100">
-                    <div class="card-body">
-                        <i class="bi bi-journal-text text-success fs-2 mb-2 d-block"></i>
-                        <h6 class="fw-semibold">Academic Report</h6>
-                        <small class="text-muted">Exam results and performance</small>
+
+            <div class="col-12 col-md-4">
+                <a href="{% url 'report_academic' %}" class="card border-0 shadow-sm text-decoration-none h-100 bg-surface-hover transition-all">
+                    <div class="card-body p-4">
+                        <div class="avatar bg-success-soft text-success rounded-3 p-3 mb-3 d-inline-block">
+                            <i class="bi bi-journal-text fs-2"></i>
+                        </div>
+                        <h6 class="font-weight-bold text-dark mb-1">Academic Performance</h6>
+                        <p class="text-muted small mb-0">Exam marksheets, subject pass ratios, and student grade reports.</p>
                     </div>
                 </a>
             </div>
-            <div class="col-md-4">
-                <a href="{% url 'report_fees' %}" class="card text-decoration-none text-dark h-100">
-                    <div class="card-body">
-                        <i class="bi bi-credit-card text-warning fs-2 mb-2 d-block"></i>
-                        <h6 class="fw-semibold">Fee Collection Report</h6>
-                        <small class="text-muted">Fee collection and pending dues</small>
+
+            <div class="col-12 col-md-4">
+                <a href="{% url 'report_fees' %}" class="card border-0 shadow-sm text-decoration-none h-100 bg-surface-hover transition-all">
+                    <div class="card-body p-4">
+                        <div class="avatar bg-warning-soft text-warning rounded-3 p-3 mb-3 d-inline-block">
+                            <i class="bi bi-credit-card-2-front fs-2"></i>
+                        </div>
+                        <h6 class="font-weight-bold text-dark mb-1">Fee Collection Report</h6>
+                        <p class="text-muted small mb-0">Financial invoices breakdown, total collections, and overdue dues.</p>
                     </div>
                 </a>
             </div>

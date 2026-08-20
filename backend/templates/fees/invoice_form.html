@@ -1,26 +1,79 @@
-{% extends 'base.html' %}{% load static %}
-{% block title %}Create Invoice - EduCore SMS{% endblock %}
-{% block page_title %}Create Invoice{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Fee Invoice - School ERP{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body">
-                <form method="POST" novalidate>{% csrf_token %}
-                    <div class="row g-3">
-                        <div class="col-md-6"><label class="form-label">Student <span class="text-danger">*</span></label>{{ form.student }}{% if form.student.errors %}<div class="text-danger small">{{ form.student.errors }}</div>{% endif %}</div>
-                        <div class="col-md-6"><label class="form-label">Academic Year <span class="text-danger">*</span></label>{{ form.academic_year }}{% if form.academic_year.errors %}<div class="text-danger small">{{ form.academic_year.errors }}</div>{% endif %}</div>
-                        <div class="col-md-6"><label class="form-label">Invoice #</label>{{ form.invoice_number }}</div>
-                        <div class="col-md-6"><label class="form-label">Category</label>{{ form.category }}</div>
-                        <div class="col-md-4"><label class="form-label">Issue Date</label>{{ form.issue_date }}</div>
-                        <div class="col-md-4"><label class="form-label">Due Date</label>{{ form.due_date }}{% if form.due_date.errors %}<div class="text-danger small">{{ form.due_date.errors }}</div>{% endif %}</div>
-                        <div class="col-md-4"><label class="form-label">Total Amount <span class="text-danger">*</span></label>{{ form.total_amount }}{% if form.total_amount.errors %}<div class="text-danger small">{{ form.total_amount.errors }}</div>{% endif %}</div>
-                        <div class="col-12"><label class="form-label">Remarks</label>{{ form.remarks }}</div>
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'invoice_list' %}" class="btn btn-sm btn-light border rounded-circle me-3 p-2">
+                <i class="bi bi-arrow-left fs-6"></i>
+            </a>
+            <h1 class="h3 font-weight-bold text-slate-800 mb-0">Create Student Fee Invoice</h1>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4 p-md-5">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label font-weight-semibold text-slate-700">Select Student <span class="text-danger">*</span></label>
+                        {{ form.student }}
+                        {% if form.student.errors %}<div class="text-danger small">{{ form.student.errors }}</div>{% endif %}
                     </div>
-                    <hr class="my-4">
-                    <div class="d-flex justify-content-end gap-2">
-                        <a href="{% url 'invoice_list' %}" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Create Invoice</button>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-semibold text-slate-700">Academic Session</label>
+                            {{ form.academic_session }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-semibold text-slate-700">Academic Year Label</label>
+                            {{ form.academic_year }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-semibold text-slate-700">Invoice Number</label>
+                            {{ form.invoice_number }}
+                            <div class="form-text">Leave blank to auto-generate (e.g. INV-20260820-1234)</div>
+                            {% if form.invoice_number.errors %}<div class="text-danger small">{{ form.invoice_number.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-semibold text-slate-700">Due Date <span class="text-danger">*</span></label>
+                            {{ form.due_date }}
+                            {% if form.due_date.errors %}<div class="text-danger small">{{ form.due_date.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-semibold text-slate-700">Total Amount (Rs.) <span class="text-danger">*</span></label>
+                            {{ form.total_amount }}
+                            {% if form.total_amount.errors %}<div class="text-danger small">{{ form.total_amount.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-semibold text-slate-700">Initial Amount Paid (Rs.)</label>
+                            {{ form.amount_paid }}
+                            {% if form.amount_paid.errors %}<div class="text-danger small">{{ form.amount_paid.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-semibold text-slate-700">Billing Status</label>
+                            {{ form.status }}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label font-weight-semibold text-slate-700">Remarks / Invoice Notes</label>
+                        {{ form.remarks }}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a href="{% url 'invoice_list' %}" class="btn btn-light px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">Save & Issue Invoice</button>
                     </div>
                 </form>
             </div>

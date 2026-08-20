@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Admissions - School ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 font-weight-bold text-slate-800 mb-1">Student Admissions</h1>
+        <p class="text-muted fs-7 mb-0">Manage new admission applications, partial payments, receipts, and account activation.</p>
+    </div>
+    <a href="{% url 'admission_create' %}" class="btn btn-primary shadow-sm fw-medium">
+        <i class="bi bi-person-plus me-1"></i> New Admission Application
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light border-bottom text-muted fs-7 text-uppercase fw-semibold">
+                    <tr>
+                        <th class="ps-4">Application #</th>
+                        <th>Student Name</th>
+                        <th>Class & Section</th>
+                        <th>Session</th>
+                        <th>Admission Fee</th>
+                        <th>Paid Amount</th>
+                        <th>Balance Due</th>
+                        <th>Status</th>
+                        <th class="pe-4 text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y fs-6">
+                    {% for adm in admissions %}
+                    <tr>
+                        <td class="ps-4 font-monospace fw-bold text-primary">{{ adm.admission_number }}</td>
+                        <td class="fw-bold text-slate-800">
+                            {{ adm.first_name }} {{ adm.last_name }}
+                            <div class="fs-8 text-muted fw-normal">Father: {{ adm.father_name }}</div>
+                        </td>
+                        <td>{{ adm.school_class.name }} - {{ adm.section.name }}</td>
+                        <td>{{ adm.academic_session.name }}</td>
+                        <td class="fw-semibold">Rs. {{ adm.admission_fee }}</td>
+                        <td class="text-success fw-semibold">Rs. {{ adm.amount_paid }}</td>
+                        <td class="{% if adm.balance_due > 0 %}text-danger{% else %}text-muted{% endif %} fw-semibold">Rs. {{ adm.balance_due }}</td>
+                        <td>
+                            {% if adm.status == 'APPROVED' %}
+                                <span class="badge bg-success-subtle text-success px-2.5 py-1 rounded-pill">Approved & Enrolled</span>
+                            {% elif adm.status == 'PARTIAL' %}
+                                <span class="badge bg-warning-subtle text-warning px-2.5 py-1 rounded-pill">Partially Paid</span>
+                            {% elif adm.status == 'PAID' %}
+                                <span class="badge bg-info-subtle text-info px-2.5 py-1 rounded-pill">Fully Paid</span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary px-2.5 py-1 rounded-pill">Pending Payment</span>
+                            {% endif %}
+                        </td>
+                        <td class="pe-4 text-end">
+                            <a href="{% url 'admission_receipt' adm.pk %}" class="btn btn-sm btn-outline-secondary me-1" title="Print Receipt">
+                                <i class="bi bi-printer me-1"></i> Receipt
+                            </a>
+                            {% if adm.status != 'APPROVED' %}
+                                <form method="post" action="{% url 'admission_approve' adm.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-success" title="Approve & Create Account">
+                                        <i class="bi bi-check-lg me-1"></i> Approve
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">
+                            <i class="bi bi-journal-check text-secondary display-6 d-block mb-2"></i>
+                            No admission applications found. Click "New Admission Application" to create one.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

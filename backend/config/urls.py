@@ -28,6 +28,10 @@ from apps.students.views import (
     StudentCreateView,
     StudentUpdateView,
     StudentDeleteView,
+    StudentAdmissionListView,
+    StudentAdmissionCreateView,
+    StudentAdmissionApproveView,
+    AdmissionReceiptView,
 )
 from apps.teachers.views import (
     TeacherListView,
@@ -35,6 +39,9 @@ from apps.teachers.views import (
     TeacherCreateView,
     TeacherUpdateView,
     TeacherDeleteView,
+    TeacherAllocationListView,
+    TeacherAllocationCreateView,
+    TeacherAllocationDeleteView,
 )
 from apps.classes.views import (
     ClassListView,
@@ -45,6 +52,11 @@ from apps.classes.views import (
     SectionCreateView,
     SectionUpdateView,
     SectionDeleteView,
+    AcademicSessionListView,
+    AcademicSessionCreateView,
+    AcademicSessionUpdateView,
+    SessionClosingView,
+    PromoteStudentsView,
 )
 from apps.subjects.views import (
     SubjectListView,
@@ -62,12 +74,12 @@ from apps.attendance.views import (
 from apps.examinations.views import (
     ExamListView, ExamDetailView, ExamCreateView, ExamUpdateView, ExamDeleteView,
     MarksEntryView, MarksListView,
-    ResultListView, GenerateResultView, StudentResultView,
+    ResultListView, GenerateResultView, StudentResultView, PrintableReportCardView,
 )
 from apps.fees.views import (
     FeeCategoryListView, FeeCategoryCreateView, FeeCategoryUpdateView, FeeCategoryDeleteView,
     FeeStructureListView, FeeStructureCreateView,
-    FeeInvoiceListView, FeeInvoiceCreateView, FeeInvoiceDetailView,
+    FeeInvoiceListView, FeeInvoiceCreateView, FeeInvoiceDetailView, GenerateClassInvoicesView,
     RecordPaymentView,
 )
 from apps.timetable.views import (
@@ -101,6 +113,19 @@ urlpatterns = [
     path('teacher/dashboard/', TeacherDashboardView.as_view(), name='teacher_dashboard'),
     path('student/dashboard/', StudentDashboardView.as_view(), name='student_dashboard'),
 
+    # Academic Sessions & Promotion
+    path('admin/sessions/', AcademicSessionListView.as_view(), name='session_list'),
+    path('admin/sessions/add/', AcademicSessionCreateView.as_view(), name='session_create'),
+    path('admin/sessions/<int:pk>/edit/', AcademicSessionUpdateView.as_view(), name='session_update'),
+    path('admin/session-closing/', SessionClosingView.as_view(), name='session_closing'),
+    path('admin/session-promotion/', PromoteStudentsView.as_view(), name='session_promotion'),
+
+    # Student Admissions & Receipts
+    path('admin/admissions/', StudentAdmissionListView.as_view(), name='admission_list'),
+    path('admin/admissions/add/', StudentAdmissionCreateView.as_view(), name='admission_create'),
+    path('admin/admissions/<int:pk>/approve/', StudentAdmissionApproveView.as_view(), name='admission_approve'),
+    path('admin/admissions/<int:pk>/receipt/', AdmissionReceiptView.as_view(), name='admission_receipt'),
+
     # Student Management
     path('admin/students/', StudentListView.as_view(), name='student_list'),
     path('admin/students/add/', StudentCreateView.as_view(), name='student_create'),
@@ -108,12 +133,15 @@ urlpatterns = [
     path('admin/students/<int:pk>/edit/', StudentUpdateView.as_view(), name='student_update'),
     path('admin/students/<int:pk>/delete/', StudentDeleteView.as_view(), name='student_delete'),
 
-    # Teacher Management
+    # Teacher Management & Allocations
     path('admin/teachers/', TeacherListView.as_view(), name='teacher_list'),
     path('admin/teachers/add/', TeacherCreateView.as_view(), name='teacher_create'),
     path('admin/teachers/<int:pk>/', TeacherDetailView.as_view(), name='teacher_detail'),
     path('admin/teachers/<int:pk>/edit/', TeacherUpdateView.as_view(), name='teacher_update'),
     path('admin/teachers/<int:pk>/delete/', TeacherDeleteView.as_view(), name='teacher_delete'),
+    path('admin/teacher-allocations/', TeacherAllocationListView.as_view(), name='teacher_allocation_list'),
+    path('admin/teacher-allocations/add/', TeacherAllocationCreateView.as_view(), name='teacher_allocation_create'),
+    path('admin/teacher-allocations/<int:pk>/delete/', TeacherAllocationDeleteView.as_view(), name='teacher_allocation_delete'),
 
     # Class Management
     path('admin/classes/', ClassListView.as_view(), name='class_list'),
@@ -153,10 +181,12 @@ urlpatterns = [
     path('admin/marks/', MarksListView.as_view(), name='marks_list'),
     path('admin/marks/entry/', MarksEntryView.as_view(), name='marks_entry'),
 
-    # Results Management
+    # Results & Report Cards
     path('admin/results/', ResultListView.as_view(), name='result_list'),
     path('admin/results/generate/', GenerateResultView.as_view(), name='generate_result'),
+    path('admin/results/<int:pk>/report-card/', PrintableReportCardView.as_view(), name='report_card_detail'),
     path('student/results/', StudentResultView.as_view(), name='my_results'),
+    path('student/results/<int:pk>/report-card/', PrintableReportCardView.as_view(), name='my_report_card'),
 
     # Fee Management
     path('admin/fees/categories/', FeeCategoryListView.as_view(), name='fee_category_list'),
@@ -167,6 +197,7 @@ urlpatterns = [
     path('admin/fees/structures/add/', FeeStructureCreateView.as_view(), name='fee_structure_create'),
     path('admin/fees/invoices/', FeeInvoiceListView.as_view(), name='invoice_list'),
     path('admin/fees/invoices/add/', FeeInvoiceCreateView.as_view(), name='invoice_create'),
+    path('admin/fees/invoices/generate/', GenerateClassInvoicesView.as_view(), name='generate_class_invoices'),
     path('admin/fees/invoices/<int:pk>/', FeeInvoiceDetailView.as_view(), name='invoice_detail'),
     path('admin/fees/invoices/<int:pk>/pay/', RecordPaymentView.as_view(), name='record_payment'),
 

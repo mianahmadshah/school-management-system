@@ -1,234 +1,407 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Admin Dashboard -  SMS{% endblock %}
-{% block page_title %}Dashboard{% endblock %}
+{% block title %}Admin Dashboard - School Management System{% endblock %}
+{% block page_title %}Overview Dashboard{% endblock %}
 
 {% block content %}
 <!-- Welcome Banner -->
-<div class="welcome-banner animate-fade-in">
+<div class="welcome-banner animate-fade-in mb-4">
     <div class="welcome-banner-content">
-        <h2>Welcome back, {{ request.user.first_name }}! </h2>
-        <p>Here is what's happening at your school today. Keep track of students, teachers, and academic activities in real-time.</p>
+        <h2>Welcome back, {{ request.user.first_name|default:request.user.email }}!</h2>
+        <p>Here is your real-time school overview. Track student distribution, daily attendance, fees, and system activities.</p>
     </div>
-    <i class="bi bi-mortarboard welcome-banner-icon"></i>
+    <i class="bi bi-mortarboard-fill welcome-banner-icon"></i>
 </div>
 
-<!-- Stats Row -->
-<div class="stats-row mb-4">
-    <div class="stat-item animate-fade-in-up delay-1">
-        <div class="stat-item-header">
-            <div class="stat-item-icon primary">
-                <i class="bi bi-people-fill"></i>
+<!-- Key Performance Metrics Row -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stats-card animate-fade-in-up delay-1">
+            <div class="stats-card-header">
+                <div class="stats-card-icon primary"><i class="bi bi-people-fill"></i></div>
+                <span class="badge bg-primary-soft text-primary font-weight-medium">Active</span>
+            </div>
+            <div class="stats-card-label">Total Students</div>
+            <h3 class="stats-card-value">{{ students_count|default:"0" }}</h3>
+            <div class="stats-card-footer">
+                <a href="{% url 'student_list' %}" class="text-primary text-decoration-none">Manage Students <i class="bi bi-arrow-right"></i></a>
             </div>
         </div>
-        <div class="stat-item-value">{{ students_count|default:"0" }}</div>
-        <div class="stat-item-label">Total Students</div>
     </div>
 
-    <div class="stat-item animate-fade-in-up delay-2">
-        <div class="stat-item-header">
-            <div class="stat-item-icon success">
-                <i class="bi bi-person-video3"></i>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stats-card animate-fade-in-up delay-2">
+            <div class="stats-card-header">
+                <div class="stats-card-icon success"><i class="bi bi-person-video3"></i></div>
+                <span class="badge bg-success-soft text-success font-weight-medium">Faculty</span>
+            </div>
+            <div class="stats-card-label">Total Teachers</div>
+            <h3 class="stats-card-value">{{ teachers_count|default:"0" }}</h3>
+            <div class="stats-card-footer">
+                <a href="{% url 'teacher_list' %}" class="text-success text-decoration-none">Manage Teachers <i class="bi bi-arrow-right"></i></a>
             </div>
         </div>
-        <div class="stat-item-value">{{ teachers_count|default:"0" }}</div>
-        <div class="stat-item-label">Total Teachers</div>
     </div>
 
-    <div class="stat-item animate-fade-in-up delay-3">
-        <div class="stat-item-header">
-            <div class="stat-item-icon warning">
-                <i class="bi bi-building"></i>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stats-card animate-fade-in-up delay-3">
+            <div class="stats-card-header">
+                <div class="stats-card-icon warning"><i class="bi bi-building"></i></div>
+                <span class="badge bg-warning-soft text-warning font-weight-medium">Academic</span>
+            </div>
+            <div class="stats-card-label">Total Classes</div>
+            <h3 class="stats-card-value">{{ classes_count|default:"0" }}</h3>
+            <div class="stats-card-footer">
+                <a href="{% url 'class_list' %}" class="text-warning text-decoration-none">View Classes <i class="bi bi-arrow-right"></i></a>
             </div>
         </div>
-        <div class="stat-item-value">{{ classes_count|default:"0" }}</div>
-        <div class="stat-item-label">Total Classes</div>
     </div>
 
-    <div class="stat-item animate-fade-in-up delay-4">
-        <div class="stat-item-header">
-            <div class="stat-item-icon info">
-                <i class="bi bi-calendar3"></i>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stats-card animate-fade-in-up delay-4">
+            <div class="stats-card-header">
+                <div class="stats-card-icon info"><i class="bi bi-calendar-check-fill"></i></div>
+                <span class="badge bg-info-soft text-info font-weight-medium">Today</span>
             </div>
-        </div>
-        <div class="stat-item-value">{{ timetable_entries_count|default:"0" }}</div>
-        <div class="stat-item-label">Timetable Entries</div>
-    </div>
-</div>
-
-<!-- Stats Grid -->
-<div class="stats-grid">
-    <div class="stats-card animate-fade-in-up delay-1">
-        <div class="stats-card-header">
-            <div class="stats-card-icon primary"><i class="bi bi-people-fill"></i></div>
-        </div>
-        <div class="stats-card-label">Total Students</div>
-        <h3 class="stats-card-value">{{ students_count|default:"0" }}</h3>
-        <div class="stats-card-footer">
-            <a href="{% url 'student_list' %}">View all students →</a>
-        </div>
-    </div>
-
-    <div class="stats-card animate-fade-in-up delay-2">
-        <div class="stats-card-header">
-            <div class="stats-card-icon success"><i class="bi bi-person-video3"></i></div>
-        </div>
-        <div class="stats-card-label">Total Teachers</div>
-        <h3 class="stats-card-value">{{ teachers_count|default:"0" }}</h3>
-        <div class="stats-card-footer">
-            <a href="{% url 'teacher_list' %}">View all teachers →</a>
-        </div>
-    </div>
-
-    <div class="stats-card animate-fade-in-up delay-3">
-        <div class="stats-card-header">
-            <div class="stats-card-icon warning"><i class="bi bi-building"></i></div>
-        </div>
-        <div class="stats-card-label">Total Classes</div>
-        <h3 class="stats-card-value">{{ classes_count|default:"0" }}</h3>
-        <div class="stats-card-footer">
-            <a href="{% url 'class_list' %}">View all classes →</a>
-        </div>
-    </div>
-
-    <div class="stats-card animate-fade-in-up delay-4">
-        <div class="stats-card-header">
-            <div class="stats-card-icon info"><i class="bi bi-calendar-check-fill"></i></div>
-        </div>
-        <div class="stats-card-label">Attendance Today</div>
-        <h3 class="stats-card-value">{{ attendance_percentage|default:"N/A" }}</h3>
-        <div class="stats-card-footer">
-            <a href="{% url 'attendance_list' %}">View attendance →</a>
-        </div>
-    </div>
-
-    <div class="stats-card animate-fade-in-up delay-5">
-        <div class="stats-card-header">
-            <div class="stats-card-icon secondary"><i class="bi bi-calendar3"></i></div>
-        </div>
-        <div class="stats-card-label">Timetable Entries</div>
-        <h3 class="stats-card-value">{{ timetable_entries_count|default:"0" }}</h3>
-        <div class="stats-card-footer">
-            <a href="{% url 'timetable_list' %}">View timetable →</a>
-        </div>
-    </div>
-
-    <div class="stats-card animate-fade-in-up delay-6">
-        <div class="stats-card-header">
-            <div class="stats-card-icon secondary"><i class="bi bi-clock"></i></div>
-        </div>
-        <div class="stats-card-label">Periods</div>
-        <h3 class="stats-card-value">{{ periods_count|default:"0" }}</h3>
-        <div class="stats-card-footer">
-            <a href="{% url 'period_list' %}">Manage periods →</a>
+            <div class="stats-card-label">Attendance Today</div>
+            <h3 class="stats-card-value">{{ attendance_percentage|default:"N/A" }}</h3>
+            <div class="stats-card-footer">
+                <a href="{% url 'attendance_list' %}" class="text-info text-decoration-none">Attendance Log <i class="bi bi-arrow-right"></i></a>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Quick Actions -->
-<div class="card card-accent card-accent-primary mb-4">
-    <div class="card-header bg-white py-3 border-0">
-        <h5 class="card-header-title">Quick Actions</h5>
+<!-- Secondary Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-lg-4">
+        <div class="stats-card animate-fade-in-up delay-5">
+            <div class="stats-card-header">
+                <div class="stats-card-icon danger"><i class="bi bi-credit-card-2-front-fill"></i></div>
+                <span class="badge bg-danger-soft text-danger font-weight-medium">Finance</span>
+            </div>
+            <div class="stats-card-label">Pending Invoices</div>
+            <h3 class="stats-card-value">{{ pending_fees_count|default:"0" }}</h3>
+            <div class="stats-card-footer d-flex justify-content-between align-items-center">
+                <small class="text-muted">Due: Rs. {{ total_pending_amount|default:"0" }}</small>
+                <a href="{% url 'invoice_list' %}" class="text-danger text-decoration-none">Invoices <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
     </div>
-    <div class="card-body pt-0">
-        <div class="quick-actions">
-            <a href="{% url 'student_create' %}" class="quick-action-item">
-                <div class="quick-action-icon"><i class="bi bi-person-plus"></i></div>
-                <span class="quick-action-label">Add Student</span>
-            </a>
-            <a href="{% url 'teacher_create' %}" class="quick-action-item">
-                <div class="quick-action-icon"><i class="bi bi-person-video3"></i></div>
-                <span class="quick-action-label">Add Teacher</span>
-            </a>
-            <a href="{% url 'class_create' %}" class="quick-action-item">
-                <div class="quick-action-icon"><i class="bi bi-building-add"></i></div>
-                <span class="quick-action-label">Add Class</span>
-            </a>
-            <a href="{% url 'mark_attendance' %}" class="quick-action-item">
-                <div class="quick-action-icon"><i class="bi bi-calendar-check"></i></div>
-                <span class="quick-action-label">Mark Attendance</span>
-            </a>
-            <a href="{% url 'fee_category_list' %}" class="quick-action-item">
-                <div class="quick-action-icon"><i class="bi bi-credit-card"></i></div>
-                <span class="quick-action-label">Collect Fee</span>
-            </a>
-            <a href="{% url 'announcement_create' %}" class="quick-action-item">
-                <div class="quick-action-icon"><i class="bi bi-megaphone"></i></div>
-                <span class="quick-action-label">Announcement</span>
-            </a>
-            <a href="{% url 'timetable_create' %}" class="quick-action-item">
-                <div class="quick-action-icon"><i class="bi bi-calendar-plus"></i></div>
-                <span class="quick-action-label">Add Timetable</span>
-            </a>
-            <a href="{% url 'period_list' %}" class="quick-action-item">
-                <div class="quick-action-icon"><i class="bi bi-clock"></i></div>
-                <span class="quick-action-label">Manage Periods</span>
-            </a>
+
+    <div class="col-12 col-sm-6 col-lg-4">
+        <div class="stats-card animate-fade-in-up delay-6">
+            <div class="stats-card-header">
+                <div class="stats-card-icon primary"><i class="bi bi-journal-check"></i></div>
+                <span class="badge bg-primary-soft text-primary font-weight-medium">Exams</span>
+            </div>
+            <div class="stats-card-label">Active Examinations</div>
+            <h3 class="stats-card-value">{{ exams_count|default:"0" }}</h3>
+            <div class="stats-card-footer">
+                <a href="{% url 'exam_list' %}" class="text-primary text-decoration-none">Manage Exams <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-4">
+        <div class="stats-card animate-fade-in-up delay-6">
+            <div class="stats-card-header">
+                <div class="stats-card-icon secondary"><i class="bi bi-clock-history"></i></div>
+                <span class="badge bg-secondary-soft text-secondary font-weight-medium">Schedule</span>
+            </div>
+            <div class="stats-card-label">Timetable Sessions</div>
+            <h3 class="stats-card-value">{{ timetable_entries_count|default:"0" }}</h3>
+            <div class="stats-card-footer">
+                <a href="{% url 'timetable_list' %}" class="text-secondary text-decoration-none">Timetables <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-3 mb-4">
+    <!-- Chart 1: Students per Class -->
+    <div class="col-12 col-lg-7">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title m-0 font-weight-bold">Student Enrollment by Class</h5>
+                    <small class="text-muted">Total registered students per grade/class</small>
+                </div>
+                <i class="bi bi-bar-chart-line text-primary fs-5"></i>
+            </div>
+            <div class="card-body pt-2">
+                <div style="position: relative; height: 260px; width: 100%;">
+                    <canvas id="classChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 2: Attendance Overview -->
+    <div class="col-12 col-lg-5">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title m-0 font-weight-bold">Attendance Overview</h5>
+                    <small class="text-muted">Present vs Absent vs Late Breakdown</small>
+                </div>
+                <i class="bi bi-pie-chart text-success fs-5"></i>
+            </div>
+            <div class="card-body pt-2">
+                <div style="position: relative; height: 260px; width: 100%;">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- Chart 3: Fee Status Summary -->
+    <div class="col-12 col-lg-6">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title m-0 font-weight-bold">Fee Status Breakdown</h5>
+                    <small class="text-muted">Paid vs Partial vs Unpaid Invoices</small>
+                </div>
+                <i class="bi bi-wallet2 text-danger fs-5"></i>
+            </div>
+            <div class="card-body pt-2">
+                <div style="position: relative; height: 220px; width: 100%;">
+                    <canvas id="feeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Panel -->
+    <div class="col-12 col-lg-6">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="card-title m-0 font-weight-bold">Quick Actions</h5>
+                <small class="text-muted">Frequent administrative operations</small>
+            </div>
+            <div class="card-body pt-2">
+                <div class="row g-2">
+                    <div class="col-6 col-sm-4">
+                        <a href="{% url 'admission_create' %}" class="btn btn-light w-100 p-3 text-start d-flex flex-column align-items-start rounded-3 border-0 bg-surface-hover">
+                            <i class="bi bi-person-plus text-primary fs-4 mb-2"></i>
+                            <span class="font-weight-semibold text-dark small">New Admission</span>
+                        </a>
+                    </div>
+                    <div class="col-6 col-sm-4">
+                        <a href="{% url 'teacher_allocation_create' %}" class="btn btn-light w-100 p-3 text-start d-flex flex-column align-items-start rounded-3 border-0 bg-surface-hover">
+                            <i class="bi bi-person-badge text-success fs-4 mb-2"></i>
+                            <span class="font-weight-semibold text-dark small">Assign Teacher</span>
+                        </a>
+                    </div>
+                    <div class="col-6 col-sm-4">
+                        <a href="{% url 'session_closing' %}" class="btn btn-light w-100 p-3 text-start d-flex flex-column align-items-start rounded-3 border-0 bg-surface-hover">
+                            <i class="bi bi-rocket-takeoff text-warning fs-4 mb-2"></i>
+                            <span class="font-weight-semibold text-dark small">Promotion</span>
+                        </a>
+                    </div>
+                    <div class="col-6 col-sm-4">
+                        <a href="{% url 'mark_attendance' %}" class="btn btn-light w-100 p-3 text-start d-flex flex-column align-items-start rounded-3 border-0 bg-surface-hover">
+                            <i class="bi bi-calendar-check text-info fs-4 mb-2"></i>
+                            <span class="font-weight-semibold text-dark small">Take Attendance</span>
+                        </a>
+                    </div>
+                    <div class="col-6 col-sm-4">
+                        <a href="{% url 'invoice_create' %}" class="btn btn-light w-100 p-3 text-start d-flex flex-column align-items-start rounded-3 border-0 bg-surface-hover">
+                            <i class="bi bi-receipt text-danger fs-4 mb-2"></i>
+                            <span class="font-weight-semibold text-dark small">Create Invoice</span>
+                        </a>
+                    </div>
+                    <div class="col-6 col-sm-4">
+                        <a href="{% url 'session_list' %}" class="btn btn-light w-100 p-3 text-start d-flex flex-column align-items-start rounded-3 border-0 bg-surface-hover">
+                            <i class="bi bi-calendar-range text-secondary fs-4 mb-2"></i>
+                            <span class="font-weight-semibold text-dark small">Sessions</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Dashboard Grid: Activity + Announcements -->
-<div class="dashboard-row dashboard-grid-2">
+<div class="row g-3">
     <!-- Recent Activity -->
-    <div class="card h-100">
-        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-            <h5 class="card-header-title">Recent Activity Logs</h5>
-            <a href="#" class="btn btn-ghost btn-sm">View All</a>
-        </div>
-        <div class="card-body pt-0">
-            {% if activity_logs %}
-                <ul class="activity-feed">
-                    {% for log in activity_logs|slice:":10" %}
-                        <li class="activity-feed-item">
-                            <div class="activity-feed-icon primary"><i class="bi bi-person"></i></div>
-                            <div class="activity-feed-content">
-                                <div class="activity-feed-text">
-                                    <strong>{{ log.user.get_full_name }}</strong> {{ log.description }}
+    <div class="col-12 col-lg-6">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="card-title m-0 font-weight-bold">Recent System Logs</h5>
+                <span class="badge bg-light text-muted">Latest 5</span>
+            </div>
+            <div class="card-body pt-0">
+                {% if activity_logs %}
+                    <ul class="list-group list-group-flush">
+                        {% for log in activity_logs %}
+                            <li class="list-group-item px-0 py-3 d-flex align-items-start border-bottom">
+                                <div class="avatar bg-primary-soft text-primary me-3 rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                                    <i class="bi bi-person-fill fs-6"></i>
                                 </div>
-                                <div class="activity-feed-time">{{ log.created_at|timesince }} ago</div>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <div class="empty-state">
-                    <div class="empty-state-icon"><i class="bi bi-journal-x"></i></div>
-                    <h6 class="empty-state-title">No recent activity</h6>
-                    <p class="empty-state-description">Activity logs will appear here as actions are performed across the system.</p>
-                </div>
-            {% endif %}
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong class="text-dark small">{% if log.user %}{{ log.user.get_full_name|default:log.user.email }}{% else %}System Event{% endif %}</strong>
+                                        <small class="text-muted" style="font-size: 0.75rem;">{{ log.timestamp|timesince }} ago</small>
+                                    </div>
+                                    <p class="text-secondary mb-0 small">{{ log.description }}</p>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-journal-x text-muted fs-1 mb-2 d-block"></i>
+                        <h6 class="text-dark font-weight-semibold">No recent activity</h6>
+                        <p class="text-muted small mb-0">System events will appear here automatically.</p>
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 
     <!-- Latest Announcements -->
-    <div class="card h-100">
-        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-            <h5 class="card-header-title">Latest Announcements</h5>
-            <a href="{% url 'announcement_list' %}" class="btn btn-ghost btn-sm">View All</a>
-        </div>
-        <div class="card-body pt-0">
-            {% if announcements %}
-                {% for announcement in announcements|slice:":5" %}
-                    <div class="announcement-card">
-                        <div class="announcement-card-header">
-                            <h6 class="announcement-card-title">{{ announcement.title }}</h6>
-                            <span class="announcement-card-date">{{ announcement.created_at|date:"M d" }}</span>
+    <div class="col-12 col-lg-6">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="card-title m-0 font-weight-bold">Latest Announcements</h5>
+                <a href="{% url 'announcement_list' %}" class="btn btn-link btn-sm text-primary p-0 text-decoration-none">View All →</a>
+            </div>
+            <div class="card-body pt-0">
+                {% if announcements %}
+                    {% for announcement in announcements %}
+                        <div class="p-3 mb-2 rounded-3 bg-light border-start border-3 border-primary">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="m-0 font-weight-semibold text-dark">{{ announcement.title }}</h6>
+                                <span class="badge bg-white text-muted border" style="font-size: 0.7rem;">{{ announcement.created_at|date:"M d, Y" }}</span>
+                            </div>
+                            <p class="text-secondary small mb-1">{{ announcement.content|truncatechars:110 }}</p>
+                            <small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-person me-1"></i> Posted by {{ announcement.published_by.get_full_name|default:"Admin" }}</small>
                         </div>
-                        <p class="announcement-card-text">{{ announcement.content|truncatechars:100 }}</p>
-                        <div class="announcement-card-author">By {{ announcement.published_by.get_full_name|default:"Admin" }}</div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-megaphone text-muted fs-1 mb-2 d-block"></i>
+                        <h6 class="text-dark font-weight-semibold">No announcements yet</h6>
+                        <p class="text-muted small mb-3">Broadcast notices to teachers, students, or staff.</p>
+                        <a href="{% url 'announcement_create' %}" class="btn btn-primary btn-sm px-3">Create Notice</a>
                     </div>
-                {% endfor %}
-            {% else %}
-                <div class="empty-state">
-                    <div class="empty-state-icon"><i class="bi bi-megaphone"></i></div>
-                    <h6 class="empty-state-title">No announcements yet</h6>
-                    <p class="empty-state-description">Post an announcement to keep everyone informed.</p>
-                    <a href="{% url 'announcement_create' %}" class="btn btn-primary btn-sm">Create Announcement</a>
-                </div>
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Colors
+    const primaryColor = '#315EFB';
+    const successColor = '#16A34A';
+    const warningColor = '#D97706';
+    const dangerColor = '#DC2626';
+    const infoColor = '#0284C7';
+
+    // Chart 1: Class Enrollment
+    const classLabels = {{ class_chart_labels|safe|default:"[]" }};
+    const classData = {{ class_chart_data|safe|default:"[]" }};
+    
+    if (document.getElementById('classChart')) {
+        new Chart(document.getElementById('classChart'), {
+            type: 'bar',
+            data: {
+                labels: classLabels.length > 0 ? classLabels : ['No Classes'],
+                datasets: [{
+                    label: 'Students',
+                    data: classData.length > 0 ? classData : [0],
+                    backgroundColor: primaryColor,
+                    borderRadius: 6,
+                    maxBarThickness: 40
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // Chart 2: Attendance Overview
+    if (document.getElementById('attendanceChart')) {
+        const presentCount = {{ attendance_present_count|default:0 }};
+        const absentCount = {{ attendance_absent_count|default:0 }};
+        const lateCount = {{ attendance_late_count|default:0 }};
+        const hasData = (presentCount + absentCount + lateCount) > 0;
+
+        new Chart(document.getElementById('attendanceChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Present', 'Absent', 'Late'],
+                datasets: [{
+                    data: hasData ? [presentCount, absentCount, lateCount] : [1, 0, 0],
+                    backgroundColor: hasData ? [successColor, dangerColor, warningColor] : ['#E5E7EB', '#E5E7EB', '#E5E7EB']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    }
+
+    // Chart 3: Fee Status
+    if (document.getElementById('feeChart')) {
+        const paidCount = {{ fee_paid_count|default:0 }};
+        const partialCount = {{ fee_partial_count|default:0 }};
+        const unpaidCount = {{ fee_unpaid_count|default:0 }};
+        const hasFeeData = (paidCount + partialCount + unpaidCount) > 0;
+
+        new Chart(document.getElementById('feeChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Paid', 'Partial', 'Unpaid'],
+                datasets: [{
+                    data: hasFeeData ? [paidCount, partialCount, unpaidCount] : [1, 0, 0],
+                    backgroundColor: hasFeeData ? [successColor, infoColor, dangerColor] : ['#E5E7EB', '#E5E7EB', '#E5E7EB']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

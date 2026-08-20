@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Edit Academic Session{% else %}New Academic Session{% endif %} - School ERP{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'session_list' %}" class="btn btn-sm btn-light border rounded-circle me-3 p-2">
+                <i class="bi bi-arrow-left fs-6"></i>
+            </a>
+            <h1 class="h3 font-weight-bold text-slate-800 mb-0">{% if object %}Edit Academic Session{% else %}Add Academic Session{% endif %}</h1>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label font-weight-semibold text-slate-700">Academic Session Name</label>
+                        {{ form.name }}
+                        <div class="form-text">e.g. 2026-2027 or 2027-2028</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-semibold text-slate-700">Start Date</label>
+                            {{ form.start_date }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-semibold text-slate-700">End Date</label>
+                            {{ form.end_date }}
+                        </div>
+                    </div>
+                    <div class="mb-3 form-check">
+                        {{ form.is_current }}
+                        <label class="form-check-label font-weight-semibold text-slate-700">Set as Current Active Session</label>
+                        <div class="form-text text-warning">Setting this will make all other sessions inactive as current.</div>
+                    </div>
+                    <div class="mb-4 form-check">
+                        {{ form.is_active }}
+                        <label class="form-check-label font-weight-semibold text-slate-700">Is Active</label>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'session_list' %}" class="btn btn-light px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">Save Academic Session</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

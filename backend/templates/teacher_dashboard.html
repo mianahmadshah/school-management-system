@@ -1,214 +1,200 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Teacher Dashboard - EduCore SMS{% endblock %}
-{% block page_title %}My Dashboard{% endblock %}
+{% block title %}Teacher Dashboard - School Management System{% endblock %}
+{% block page_title %}Faculty Dashboard{% endblock %}
 
 {% block content %}
 <!-- Welcome Banner -->
-<div class="welcome-banner animate-fade-in">
+<div class="welcome-banner animate-fade-in mb-4">
     <div class="welcome-banner-content">
-        <h2>Good day, {{ request.user.first_name }}! 📚</h2>
-        <p>Here is an overview of your classes and activities today.</p>
+        <h2>Good day, {{ request.user.first_name|default:request.user.email }}! 📚</h2>
+        <p>Manage your class schedules, student attendance, assignment submissions, and academic evaluations.</p>
     </div>
-    <i class="bi bi-mortarboard welcome-banner-icon"></i>
-</div>
-
-<!-- Teacher Stats Row -->
-<div class="stats-row mb-4">
-    <div class="stat-item animate-fade-in-up delay-1">
-        <div class="stat-item-header">
-            <div class="stat-item-icon primary">
-                <i class="bi bi-collection"></i>
-            </div>
-        </div>
-        <div class="stat-item-value">{{ subjects_taught|default:"0" }}</div>
-        <div class="stat-item-label">My Subjects</div>
-    </div>
-
-    <div class="stat-item animate-fade-in-up delay-2">
-        <div class="stat-item-header">
-            <div class="stat-item-icon success">
-                <i class="bi bi-people-fill"></i>
-            </div>
-        </div>
-        <div class="stat-item-value">{{ total_students|default:"0" }}</div>
-        <div class="stat-item-label">Total Students</div>
-    </div>
-
-    <div class="stat-item animate-fade-in-up delay-3">
-        <div class="stat-item-header">
-            <div class="stat-item-icon warning">
-                <i class="bi bi-calendar-check"></i>
-            </div>
-        </div>
-        <div class="stat-item-value">{{ today_classes|default:"0" }}</div>
-        <div class="stat-item-label">Today's Classes</div>
-    </div>
+    <i class="bi bi-mortarboard-fill welcome-banner-icon"></i>
 </div>
 
 <!-- Teacher Stats Grid -->
-<div class="stats-grid">
-    <div class="stats-card animate-fade-in-up delay-1">
-        <div class="stats-card-header">
-            <div class="stats-card-icon primary"><i class="bi bi-collection"></i></div>
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stats-card animate-fade-in-up delay-1">
+            <div class="stats-card-header">
+                <div class="stats-card-icon primary"><i class="bi bi-book-fill"></i></div>
+                <span class="badge bg-primary-soft text-primary font-weight-medium">Assigned</span>
+            </div>
+            <div class="stats-card-label">My Subjects</div>
+            <h3 class="stats-card-value">{{ subjects_taught|default:"0" }}</h3>
+            <div class="stats-card-footer">
+                <span class="text-muted small">Course allocations</span>
+            </div>
         </div>
-        <div class="stats-card-label">My Subjects</div>
-        <h3 class="stats-card-value">{{ subjects_taught|default:"0" }}</h3>
     </div>
 
-    <div class="stats-card animate-fade-in-up delay-2">
-        <div class="stats-card-header">
-            <div class="stats-card-icon success"><i class="bi bi-people-fill"></i></div>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stats-card animate-fade-in-up delay-2">
+            <div class="stats-card-header">
+                <div class="stats-card-icon success"><i class="bi bi-people-fill"></i></div>
+                <span class="badge bg-success-soft text-success font-weight-medium">Students</span>
+            </div>
+            <div class="stats-card-label">Total Enrolled</div>
+            <h3 class="stats-card-value">{{ total_students|default:"0" }}</h3>
+            <div class="stats-card-footer">
+                <span class="text-muted small">Across all sections</span>
+            </div>
         </div>
-        <div class="stats-card-label">Total Students</div>
-        <h3 class="stats-card-value">{{ total_students|default:"0" }}</h3>
     </div>
 
-    <div class="stats-card animate-fade-in-up delay-3">
-        <div class="stats-card-header">
-            <div class="stats-card-icon warning"><i class="bi bi-calendar-check"></i></div>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stats-card animate-fade-in-up delay-3">
+            <div class="stats-card-header">
+                <div class="stats-card-icon warning"><i class="bi bi-clock-fill"></i></div>
+                <span class="badge bg-warning-soft text-warning font-weight-medium">Today</span>
+            </div>
+            <div class="stats-card-label">Today's Classes</div>
+            <h3 class="stats-card-value">{{ today_classes|default:"0" }}</h3>
+            <div class="stats-card-footer">
+                <a href="#scheduleSection" class="text-warning text-decoration-none small">View Schedule ↓</a>
+            </div>
         </div>
-        <div class="stats-card-label">Today's Classes</div>
-        <h3 class="stats-card-value">{{ today_classes|default:"0" }}</h3>
     </div>
 
-    <div class="stats-card animate-fade-in-up delay-4">
-        <div class="stats-card-header">
-            <div class="stats-card-icon info"><i class="bi bi-file-earmark-text"></i></div>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stats-card animate-fade-in-up delay-4">
+            <div class="stats-card-header">
+                <div class="stats-card-icon danger"><i class="bi bi-file-earmark-arrow-up-fill"></i></div>
+                <span class="badge bg-danger-soft text-danger font-weight-medium">Action</span>
+            </div>
+            <div class="stats-card-label">Pending Submissions</div>
+            <h3 class="stats-card-value">{{ pending_assignments|default:"0" }}</h3>
+            <div class="stats-card-footer">
+                <a href="{% url 'assignment_list' %}" class="text-danger text-decoration-none small">Review Assignments →</a>
+            </div>
         </div>
-        <div class="stats-card-label">Pending Tasks</div>
-        <h3 class="stats-card-value">{{ pending_assignments|default:"0" }}</h3>
     </div>
 </div>
 
-<!-- Quick Actions -->
-<div class="card card-accent card-accent-primary mb-4">
+<!-- Quick Actions Panel -->
+<div class="card border-0 shadow-sm mb-4">
     <div class="card-header bg-white py-3 border-0">
-        <h5 class="card-header-title">Quick Actions</h5>
+        <h5 class="card-title m-0 font-weight-bold">Faculty Quick Actions</h5>
     </div>
     <div class="card-body pt-0">
-        <div class="quick-actions">
-            <a href="{% url 'mark_attendance' %}" class="quick-action-item">
-                <div class="quick-action-icon"><i class="bi bi-calendar-check"></i></div>
-                <span class="quick-action-label">Take Attendance</span>
-            </a>
-            <a href="{% url 'marks_entry' %}" class="quick-action-item">
-                <div class="quick-action-icon"><i class="bi bi-file-earmark-arrow-up"></i></div>
-                <span class="quick-action-label">Enter Marks</span>
-            </a>
-            <a href="{% url 'my_timetable' %}" class="quick-action-item">
-                <div class="quick-action-icon"><i class="bi bi-calendar3"></i></div>
-                <span class="quick-action-label">My Timetable</span>
-            </a>
-            <a href="{% url 'announcement_list' %}" class="quick-action-item">
-                <div class="quick-action-icon"><i class="bi bi-megaphone"></i></div>
-                <span class="quick-action-label">Announcements</span>
-            </a>
+        <div class="row g-2">
+            <div class="col-6 col-md-3">
+                <a href="{% url 'mark_attendance' %}" class="btn btn-light w-100 p-3 text-start d-flex align-items-center rounded-3 border-0 bg-surface-hover">
+                    <i class="bi bi-calendar-check text-primary fs-3 me-3"></i>
+                    <div>
+                        <div class="font-weight-semibold text-dark">Mark Attendance</div>
+                        <small class="text-muted">Take class register</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a href="{% url 'marks_entry' %}" class="btn btn-light w-100 p-3 text-start d-flex align-items-center rounded-3 border-0 bg-surface-hover">
+                    <i class="bi bi-file-earmark-arrow-up text-success fs-3 me-3"></i>
+                    <div>
+                        <div class="font-weight-semibold text-dark">Enter Marks</div>
+                        <small class="text-muted">Exam evaluation</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a href="{% url 'teacher_timetable' %}" class="btn btn-light w-100 p-3 text-start d-flex align-items-center rounded-3 border-0 bg-surface-hover">
+                    <i class="bi bi-calendar3 text-warning fs-3 me-3"></i>
+                    <div>
+                        <div class="font-weight-semibold text-dark">My Timetable</div>
+                        <small class="text-muted">Weekly schedule</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a href="{% url 'assignment_create' %}" class="btn btn-light w-100 p-3 text-start d-flex align-items-center rounded-3 border-0 bg-surface-hover">
+                    <i class="bi bi-journal-plus text-info fs-3 me-3"></i>
+                    <div>
+                        <div class="font-weight-semibold text-dark">Create Homework</div>
+                        <small class="text-muted">Post assignment</small>
+                    </div>
+                </a>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Two Column: Recent Activity & Assignments -->
-<div class="dashboard-row dashboard-grid-2">
-    <!-- Recent Activity -->
-    <div class="card h-100">
-        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-            <h5 class="card-header-title">Recent Activity</h5>
-        </div>
-        <div class="card-body pt-0">
-            {% if activity_logs %}
-                <ul class="activity-feed">
-                    {% for log in activity_logs|slice:":8" %}
-                        <li class="activity-feed-item">
-                            <div class="activity-feed-icon primary"><i class="bi bi-activity"></i></div>
-                            <div class="activity-feed-content">
-                                <div class="activity-feed-text">{{ log.description }}</div>
-                                <div class="activity-feed-time">{{ log.created_at|timesince }} ago</div>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <div class="empty-state">
-                    <div class="empty-state-icon"><i class="bi bi-journal-x"></i></div>
-                    <h6 class="empty-state-title">No recent activity</h6>
-                    <p class="empty-state-description">Your recent actions will appear here.</p>
-                </div>
-            {% endif %}
+<!-- Schedule & Submissions Grid -->
+<div class="row g-3 mb-4" id="scheduleSection">
+    <!-- Today's Schedule -->
+    <div class="col-12 col-lg-7">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="card-title m-0 font-weight-bold">Today's Class Schedule</h5>
+                <span class="badge bg-primary-soft text-primary font-weight-medium">Live Agenda</span>
+            </div>
+            <div class="card-body pt-0">
+                {% if today_schedule %}
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Period</th>
+                                    <th>Subject</th>
+                                    <th>Class & Section</th>
+                                    <th>Time</th>
+                                    <th>Room</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for period in today_schedule %}
+                                <tr>
+                                    <td><span class="badge bg-secondary font-weight-bold">Period {{ period.period_number }}</span></td>
+                                    <td><strong class="text-dark">{{ period.subject }}</strong></td>
+                                    <td><span class="badge bg-primary-soft text-primary">{{ period.class_group }}</span></td>
+                                    <td class="text-muted small"><i class="bi bi-clock me-1"></i>{{ period.start_time|time:"g:i A" }} - {{ period.end_time|time:"g:i A" }}</td>
+                                    <td><span class="badge bg-light text-dark border">{{ period.room }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-calendar-event text-muted fs-1 mb-2 d-block"></i>
+                        <h6 class="text-dark font-weight-semibold">No classes scheduled for today</h6>
+                        <p class="text-muted small mb-0">Use this time for lesson planning and grading assignments.</p>
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 
-    <!-- Pending Assignments -->
-    <div class="card h-100">
-        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-            <h5 class="card-header-title">Pending Submissions</h5>
-            <a href="{% url 'assignment_list' %}" class="btn btn-ghost btn-sm">View All</a>
-        </div>
-        <div class="card-body pt-0">
-            {% if pending_submissions %}
-                <ul class="activity-feed">
-                    {% for submission in pending_submissions|slice:":8" %}
-                        <li class="activity-feed-item">
-                            <div class="activity-feed-icon warning"><i class="bi bi-file-earmark"></i></div>
-                            <div class="activity-feed-content">
-                                <div class="activity-feed-text">
-                                    <strong>{{ submission.student }}</strong> - {{ submission.assignment.title }}
+    <!-- Pending Submissions -->
+    <div class="col-12 col-lg-5">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="card-title m-0 font-weight-bold">Pending Student Submissions</h5>
+                <a href="{% url 'assignment_list' %}" class="btn btn-link btn-sm text-primary p-0 text-decoration-none">View All →</a>
+            </div>
+            <div class="card-body pt-0">
+                {% if pending_submissions %}
+                    <div class="list-group list-group-flush">
+                        {% for submission in pending_submissions %}
+                            <div class="list-group-item px-0 py-2 border-bottom d-flex align-items-center justify-content-between">
+                                <div>
+                                    <strong class="text-dark small d-block">{{ submission.student.full_name }}</strong>
+                                    <small class="text-muted">{{ submission.assignment.title|truncatechars:35 }}</small>
                                 </div>
-                                <div class="activity-feed-time">{{ submission.submitted_at|timesince }} ago</div>
+                                <a href="{% url 'grade_submission' submission.pk %}" class="btn btn-sm btn-outline-primary py-1 px-2 text-nowrap">Grade</a>
                             </div>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <div class="empty-state">
-                    <div class="empty-state-icon"><i class="bi bi-check-circle"></i></div>
-                    <h6 class="empty-state-title">All caught up!</h6>
-                    <p class="empty-state-description">No pending submissions to review.</p>
-                </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
-<!-- Upcoming Schedule -->
-<div class="card">
-    <div class="card-header bg-white py-3 border-0">
-        <h5 class="card-header-title">Today's Schedule</h5>
-    </div>
-    <div class="card-body pt-0">
-        {% if today_schedule %}
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Period</th>
-                            <th>Subject</th>
-                            <th>Class</th>
-                            <th>Time</th>
-                            <th>Room</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for period in today_schedule %}
-                        <tr>
-                            <td>{{ period.period_number }}</td>
-                            <td><span class="badge badge-primary">{{ period.subject }}</span></td>
-                            <td>{{ period.class_group }}</td>
-                            <td>{{ period.start_time|time:"g:i A" }} - {{ period.end_time|time:"g:i A" }}</td>
-                            <td>{{ period.room }}</td>
-                        </tr>
                         {% endfor %}
-                    </tbody>
-                </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-check2-circle text-success fs-1 mb-2 d-block"></i>
+                        <h6 class="text-dark font-weight-semibold">All submissions graded!</h6>
+                        <p class="text-muted small mb-0">No pending student homework requires review right now.</p>
+                    </div>
+                {% endif %}
             </div>
-        {% else %}
-            <div class="empty-state">
-                <div class="empty-state-icon"><i class="bi bi-calendar"></i></div>
-                <h6 class="empty-state-title">No classes scheduled today</h6>
-                <p class="empty-state-description">Enjoy your day off or use this time for planning!</p>
-            </div>
-        {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

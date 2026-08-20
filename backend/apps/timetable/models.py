@@ -49,6 +49,13 @@ class Timetable(models.Model):
         SATURDAY = 'SATURDAY', 'Saturday'
         SUNDAY = 'SUNDAY', 'Sunday'
 
+    academic_session = models.ForeignKey(
+        'classes.AcademicSession',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='timetable_entries'
+    )
     school_class = models.ForeignKey(
         'classes.Class',
         on_delete=models.CASCADE,

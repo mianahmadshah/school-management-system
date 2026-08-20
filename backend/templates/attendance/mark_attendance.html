@@ -1,65 +1,81 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Mark Attendance - EduCore SMS{% endblock %}
-{% block page_title %}Mark Attendance{% endblock %}
+{% block title %}Mark Class Attendance - School Management System{% endblock %}
+{% block page_title %}Daily Attendance Register{% endblock %}
 
 {% block content %}
+<!-- Back Bar -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <a href="{% url 'attendance_list' %}" class="text-decoration-none text-muted">
-            <i class="bi bi-arrow-left"></i> Back to Records
-        </a>
+        <h4 class="m-0 font-weight-bold text-dark">Take Attendance</h4>
+        <small class="text-muted">Record daily present, absent, and late student statuses.</small>
     </div>
+    <a href="{% url 'attendance_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-calendar-event me-1"></i> Attendance Logs
+    </a>
 </div>
 
-<!-- Step 1: Select Class, Section, Date -->
-<div class="card mb-4">
-    <div class="card-body">
+<!-- Class & Date Selection Card -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3 border-0">
+        <h6 class="m-0 font-weight-bold text-dark"><i class="bi bi-filter text-primary me-2"></i>Select Class & Date</h6>
+    </div>
+    <div class="card-body pt-0">
         <form method="GET" class="row g-3 align-items-end">
-            <div class="col-md-3">
-                <label class="form-label">Class <span class="text-danger">*</span></label>
+            <div class="col-12 col-md-4">
+                <label class="form-label font-weight-semibold text-secondary small">Class <span class="text-danger">*</span></label>
                 <select name="class_id" class="form-select" required>
-                    <option value="">Select Class</option>
+                    <option value="">Choose Class...</option>
                     {% for class in classes %}
                         <option value="{{ class.pk }}" {% if selected_class == class.pk|stringformat:"s" %}selected{% endif %}>{{ class.name }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-3">
-                <label class="form-label">Section <span class="text-danger">*</span></label>
+            <div class="col-12 col-md-4">
+                <label class="form-label font-weight-semibold text-secondary small">Section <span class="text-danger">*</span></label>
                 <select name="section_id" class="form-select" required>
-                    <option value="">Select Section</option>
+                    <option value="">Choose Section...</option>
                     {% for section in classes %}
                         {% for sec in section.sections.all %}
-                            <option value="{{ sec.pk }}" {% if selected_section == sec.pk|stringformat:"s" %}selected{% endif %}>{{ section.name }} - {{ sec.name }}</option>
+                            <option value="{{ sec.pk }}" {% if selected_section == sec.pk|stringformat:"s" %}selected{% endif %}>{{ section.name }} - Section {{ sec.name }}</option>
                         {% endfor %}
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-3">
-                <label class="form-label">Date <span class="text-danger">*</span></label>
+            <div class="col-12 col-md-2">
+                <label class="form-label font-weight-semibold text-secondary small">Attendance Date <span class="text-danger">*</span></label>
                 <input type="date" name="date" class="form-control" value="{{ selected_date|default:today.isoformat }}" required>
             </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-search"></i> Load Students
+            <div class="col-12 col-md-2">
+                <button type="submit" class="btn btn-primary w-100 shadow-sm">
+                    <i class="bi bi-people-fill me-1"></i> Load Students
                 </button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Step 2: Mark Attendance for Each Student -->
+<!-- Student Attendance Table -->
 {% if students %}
-<div class="card">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0 fw-semibold">
-            <i class="bi bi-people text-primary"></i> Mark Attendance
-            <small class="text-muted ms-2">({{ students|length }} student{{ students|length|pluralize }})</small>
-        </h5>
+<div class="card border-0 shadow-sm mb-5">
+    <div class="card-header bg-white py-3 border-0 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+        <div>
+            <h6 class="m-0 font-weight-bold text-dark">
+                Student Register <span class="badge bg-primary-soft text-primary font-weight-semibold ms-2">{{ students|length }} Enrolled</span>
+            </h6>
+            <small class="text-muted">Date: {{ selected_date }}</small>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-success-soft text-success border border-success-subtle font-weight-semibold" onclick="setAllStatus('PRESENT')">
+                <i class="bi bi-check-all me-1"></i> Mark All Present
+            </button>
+            <button type="button" class="btn btn-sm btn-danger-soft text-danger border border-danger-subtle font-weight-semibold" onclick="setAllStatus('ABSENT')">
+                <i class="bi bi-x-circle me-1"></i> Mark All Absent
+            </button>
+        </div>
     </div>
-    <div class="card-body">
+    <div class="card-body p-0">
         <form method="POST" id="attendanceForm">
             {% csrf_token %}
             <input type="hidden" name="date" value="{{ selected_date }}">
@@ -67,25 +83,32 @@
             <input type="hidden" name="section" value="{{ selected_section }}">
             
             <div class="table-responsive">
-                <table class="table data-table table-hover mb-0">
-                    <thead>
+                <table class="table align-middle table-hover m-0">
+                    <thead class="table-light">
                         <tr>
-                            <th style="width: 5%;">#</th>
+                            <th class="ps-3" style="width: 50px;">#</th>
                             <th>Student Name</th>
-                            <th>Roll No</th>
-                            <th style="width: 20%;">Status</th>
-                            <th>Remarks</th>
+                            <th>Roll Number</th>
+                            <th style="width: 250px;">Attendance Status</th>
+                            <th class="pe-3">Notes / Remarks</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for student in students %}
                         <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td class="fw-semibold">{{ student.full_name }}</td>
-                            <td>{{ student.roll_number|default:"—" }}</td>
+                            <td class="ps-3 text-muted small">{{ forloop.counter }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar bg-primary-soft text-primary rounded-circle me-2 d-flex align-items-center justify-content-center font-weight-bold" style="width: 34px; height: 34px; font-size: 0.8rem;">
+                                        {{ student.full_name|slice:":1"|upper }}
+                                    </div>
+                                    <strong class="text-dark">{{ student.full_name }}</strong>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-light text-dark border">{{ student.roll_number|default:"—" }}</span></td>
                             <td>
                                 <input type="hidden" name="student_ids" value="{{ student.pk }}">
-                                <select name="statuses" class="form-select form-select-sm status-select" data-student="{{ student.pk }}">
+                                <select name="statuses" class="form-select form-select-sm status-select font-weight-semibold" data-student="{{ student.pk }}">
                                     <option value="PRESENT" {% if student.pk in existing_ids %}{% for r in records %}{% if r.student_id == student.pk and r.status == 'PRESENT' %}selected{% endif %}{% endfor %}{% endif %}>Present</option>
                                     <option value="ABSENT" {% if student.pk in existing_ids %}{% for r in records %}{% if r.student_id == student.pk and r.status == 'ABSENT' %}selected{% endif %}{% endfor %}{% endif %}>Absent</option>
                                     <option value="LATE" {% if student.pk in existing_ids %}{% for r in records %}{% if r.student_id == student.pk and r.status == 'LATE' %}selected{% endif %}{% endfor %}{% endif %}>Late</option>
@@ -93,8 +116,8 @@
                                     <option value="LEAVE" {% if student.pk in existing_ids %}{% for r in records %}{% if r.student_id == student.pk and r.status == 'LEAVE' %}selected{% endif %}{% endfor %}{% endif %}>On Leave</option>
                                 </select>
                             </td>
-                            <td>
-                                <input type="text" name="remarks_list" class="form-control form-control-sm" placeholder="Optional" value="">
+                            <td class="pe-3">
+                                <input type="text" name="remarks_list" class="form-control form-control-sm" placeholder="Optional remark (e.g. Sick leave)..." value="">
                             </td>
                         </tr>
                         {% endfor %}
@@ -102,17 +125,9 @@
                 </table>
             </div>
 
-            <div class="d-flex justify-content-between align-items-center mt-4">
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-outline-success btn-sm" onclick="setAllStatus('PRESENT')">
-                        <i class="bi bi-check-all"></i> All Present
-                    </button>
-                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="setAllStatus('ABSENT')">
-                        <i class="bi bi-x-circle"></i> All Absent
-                    </button>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-save"></i> Save Attendance
+            <div class="card-footer bg-white py-3 border-0 d-flex justify-content-end align-items-center">
+                <button type="submit" class="btn btn-primary px-4 py-2 font-weight-semibold shadow-sm">
+                    <i class="bi bi-check-circle-fill me-2"></i> Save Attendance Records
                 </button>
             </div>
         </form>
@@ -126,8 +141,12 @@ function setAllStatus(status) {
 }
 </script>
 {% elif request.GET.class_id and request.GET.section_id %}
-<div class="alert alert-info">
-    <i class="bi bi-info-circle"></i> No active students found in the selected class and section.
+<div class="card border-0 shadow-sm text-center py-5">
+    <div class="card-body">
+        <i class="bi bi-info-circle text-info fs-1 mb-2 d-block"></i>
+        <h6 class="text-dark font-weight-semibold">No students found</h6>
+        <p class="text-muted small mb-0">No active student profiles registered under this class and section.</p>
+    </div>
 </div>
 {% endif %}
 {% endblock %}

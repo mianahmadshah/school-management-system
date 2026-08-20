@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from .models import Teacher
+from .models import Teacher, TeacherAllocation
+from apps.classes.models import Class, Section, AcademicSession
+from apps.subjects.models import Subject
 
 User = get_user_model()
 
@@ -53,3 +55,29 @@ class TeacherProfileForm(forms.ModelForm):
             'bank_account_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Bank Account Number'}),
             'bank_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Bank Name'}),
         }
+
+
+class TeacherAllocationForm(forms.ModelForm):
+    class Meta:
+        model = TeacherAllocation
+        fields = ['academic_session', 'teacher', 'school_class', 'section', 'subject', 'is_active']
+        widgets = {
+            'academic_session': forms.Select(attrs={'class': 'form-select'}),
+            'teacher': forms.Select(attrs={'class': 'form-select'}),
+            'school_class': forms.Select(attrs={'class': 'form-select'}),
+            'section': forms.Select(attrs={'class': 'form-select'}),
+            'subject': forms.Select(attrs={'class': 'form-select'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['academic_session'].queryset = AcademicSession.objects.filter(is_active=True)
+        self.fields['teacher'].queryset = Teacher.objects.filter(status='ACTIVE').select_related('user')
+        self.fields['school_class'].queryset = Class.objects.filter(is_active=True)
+        self.fields['section'].queryset = Section.objects.filter(is_active=True)
+        self.fields['subject'].queryset = Subject.objects.filter(is_active=True).select_related('school_class')
+        current = AcademicSession.get_current_session()
+        if current:
+            self.fields['academic_session'].initial = current
+
