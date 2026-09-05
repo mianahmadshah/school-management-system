@@ -12,38 +12,62 @@
             <h1 class="h3 font-weight-bold text-slate-800 mb-0">{% if object %}Edit Academic Session{% else %}Add Academic Session{% endif %}</h1>
         </div>
 
+        {% if form.errors %}
+        <div class="alert alert-danger alert-dismissible fade show mb-4 border-0 shadow-sm rounded-3" role="alert">
+            <div class="d-flex align-items-center mb-1">
+                <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+                <strong class="fs-6">Validation Error — Please fix the following issue(s):</strong>
+            </div>
+            <ul class="mb-0 ps-4">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <li><strong>{{ field|title }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+
         <div class="card border-0 shadow-sm rounded-4">
-            <div class="card-body p-4">
+            <div class="card-body p-4 p-md-5">
                 <form method="post">
                     {% csrf_token %}
+                    
                     <div class="mb-3">
-                        <label class="form-label font-weight-semibold text-slate-700">Academic Session Name</label>
+                        <label class="form-label font-weight-semibold text-slate-700">Academic Session Name <span class="text-danger">*</span></label>
                         {{ form.name }}
-                        <div class="form-text">e.g. 2026-2027 or 2027-2028</div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label font-weight-semibold text-slate-700">Start Date</label>
-                            {{ form.start_date }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label font-weight-semibold text-slate-700">End Date</label>
-                            {{ form.end_date }}
-                        </div>
-                    </div>
-                    <div class="mb-3 form-check">
-                        {{ form.is_current }}
-                        <label class="form-check-label font-weight-semibold text-slate-700">Set as Current Active Session</label>
-                        <div class="form-text text-warning">Setting this will make all other sessions inactive as current.</div>
-                    </div>
-                    <div class="mb-4 form-check">
-                        {{ form.is_active }}
-                        <label class="form-check-label font-weight-semibold text-slate-700">Is Active</label>
+                        <div class="form-text">e.g. 2027-2028 or 2028-2029 (Must be unique; "2026-2027" already exists).</div>
+                        {% if form.name.errors %}<div class="text-danger small mt-1 fw-bold">{{ form.name.errors }}</div>{% endif %}
                     </div>
 
-                    <div class="d-flex justify-content-end gap-2">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-semibold text-slate-700">Start Date <span class="text-danger">*</span></label>
+                            {{ form.start_date }}
+                            {% if form.start_date.errors %}<div class="text-danger small mt-1 fw-bold">{{ form.start_date.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-semibold text-slate-700">End Date <span class="text-danger">*</span></label>
+                            {{ form.end_date }}
+                            {% if form.end_date.errors %}<div class="text-danger small mt-1 fw-bold">{{ form.end_date.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3 form-check bg-light p-3 rounded-3">
+                        {{ form.is_current }}
+                        <label class="form-check-label font-weight-semibold text-slate-700 ms-2">Set as Current Active Session</label>
+                        <div class="form-text text-warning ms-4">Setting this will make all other sessions inactive as current.</div>
+                    </div>
+
+                    <div class="mb-4 form-check bg-light p-3 rounded-3">
+                        {{ form.is_active }}
+                        <label class="form-check-label font-weight-semibold text-slate-700 ms-2">Is Active Session</label>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
                         <a href="{% url 'session_list' %}" class="btn btn-light px-4">Cancel</a>
-                        <button type="submit" class="btn btn-primary px-4">Save Academic Session</button>
+                        <button type="submit" class="btn btn-primary px-4 font-weight-bold">Save Academic Session</button>
                     </div>
                 </form>
             </div>

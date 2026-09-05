@@ -44,14 +44,15 @@ class AnnouncementListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
             student = getattr(user, 'student_profile', None)
             if student:
                 qs = qs.filter(
+                    Q(target_audience=Announcement.Audience.ALL) |
                     Q(target_audience=Announcement.Audience.STUDENTS) |
                     Q(target_audience=Announcement.Audience.SPECIFIC_CLASS, target_class=student.current_class) |
                     Q(target_audience=Announcement.Audience.SPECIFIC_SECTION, target_section=student.section)
                 )
         elif user.is_teacher:
             qs = qs.filter(
-                Q(target_audience=Announcement.Audience.TEACHERS) |
-                Q(target_audience=Announcement.Audience.ALL)
+                Q(target_audience=Announcement.Audience.ALL) |
+                Q(target_audience=Announcement.Audience.TEACHERS)
             )
         return qs.order_by('-is_important', '-published_at')
 

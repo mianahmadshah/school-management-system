@@ -1,56 +1,156 @@
-{% extends 'base.html' %}{% load static %}
-{% block title %}Invoice {{ invoice.invoice_number }} - EduCore SMS{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Invoice #{{ invoice.invoice_number }} - School ERP{% endblock %}
 {% block page_title %}Invoice Details{% endblock %}
-{% block extra_css %}
-    .progress-bar-invoice { width: {{ invoice.paid_percentage|floatformat:1|default_if_none:'0' }}%; }
-{% endblock %}
+
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <div><a href="{% url 'invoice_list' %}" class="text-decoration-none text-muted"><i class="bi bi-arrow-left"></i> Back to Invoices</a></div>
+    <div class="d-flex align-items-center">
+        <a href="{% url 'invoice_list' %}" class="btn btn-sm btn-light border rounded-circle me-3 p-2">
+            <i class="bi bi-arrow-left fs-6"></i>
+        </a>
+        <div>
+            <h1 class="h3 font-weight-bold text-slate-800 mb-0">Fee Invoice #{{ invoice.invoice_number }}</h1>
+            <p class="text-muted fs-7 mb-0">Student: {{ invoice.student.full_name }} (Admission #: {{ invoice.student.admission_number }})</p>
+        </div>
+    </div>
     <div class="d-flex gap-2">
-        <a href="{% url 'record_payment' invoice.pk %}" class="btn btn-success"><i class="bi bi-cash"></i> Record Payment</a>
+        <button onclick="window.print()" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-printer me-1"></i> Print Invoice
+        </button>
+        {% if user.role != 'STUDENT' and invoice.status != 'PAID' %}
+        <a href="{% url 'record_payment' invoice.pk %}" class="btn btn-success shadow-sm font-weight-bold">
+            <i class="bi bi-cash me-1"></i> Collect Payment
+        </a>
+        {% endif %}
     </div>
 </div>
-<div class="row">
-    <div class="col-md-4 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="fw-semibold mb-3"><i class="bi bi-receipt text-primary"></i> Invoice Info</h5>
-                <ul class="list-unstyled">
-                    <li class="mb-2"><strong>Invoice #:</strong> {{ invoice.invoice_number }}</li>
-                    <li class="mb-2"><strong>Student:</strong> {{ invoice.student.full_name }}</li>
-                    <li class="mb-2"><strong>Admission #:</strong> {{ invoice.student.admission_number }}</li>
-                    <li class="mb-2"><strong>Class:</strong> {{ invoice.student.current_class.name }}</li>
-                    <li class="mb-2"><strong>Status:</strong> {% if invoice.status == 'PAID' %}<span class="badge badge-success-subtle">Paid</span>{% elif invoice.status == 'PARTIAL' %}<span class="badge badge-warning-subtle">Partial</span>{% else %}<span class="badge badge-danger-subtle">Unpaid</span>{% endif %}</li>
-                    <li class="mb-2"><strong>Issue Date:</strong> {{ invoice.issue_date }}</li>
-                    <li class="mb-2"><strong>Due Date:</strong> {{ invoice.due_date }}</li>
+
+<div class="row g-4">
+    <!-- Invoice Metadata Card -->
+    <div class="col-md-5 col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4">
+                <h5 class="font-weight-bold text-slate-800 border-bottom pb-3 mb-3">
+                    <i class="bi bi-file-earmark-text text-primary me-2"></i>Invoice Details
+                </h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Invoice Number:</span>
+                        <strong class="font-monospace text-primary">{{ invoice.invoice_number }}</strong>
+                    </li>
+                    <li class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Student Name:</span>
+                        <strong class="text-slate-800">{{ invoice.student.full_name }}</strong>
+                    </li>
+                    <li class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Admission #:</span>
+                        <span class="fw-semibold">{{ invoice.student.admission_number }}</span>
+                    </li>
+                    <li class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Class & Section:</span>
+                        <span class="badge bg-light text-dark border">{{ invoice.student.current_class.name }} - {{ invoice.student.section.name }}</span>
+                    </li>
+                    <li class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Academic Session:</span>
+                        <span>{{ invoice.academic_year|default:invoice.academic_session.name }}</span>
+                    </li>
+                    <li class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Issue Date:</span>
+                        <span>{{ invoice.issue_date|date:"M d, Y" }}</span>
+                    </li>
+                    <li class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Due Date:</span>
+                        <span class="text-danger fw-semibold">{{ invoice.due_date|date:"M d, Y" }}</span>
+                    </li>
+                    <li class="d-flex justify-content-between py-2 pt-3">
+                        <span class="text-muted">Billing Status:</span>
+                        {% if invoice.status == 'PAID' %}
+                            <span class="badge bg-success-subtle text-success px-3 py-1.5 rounded-pill"><i class="bi bi-check-circle me-1"></i> Paid</span>
+                        {% elif invoice.status == 'PARTIAL' %}
+                            <span class="badge bg-info-subtle text-info px-3 py-1.5 rounded-pill"><i class="bi bi-pie-chart me-1"></i> Partial</span>
+                        {% else %}
+                            <span class="badge bg-danger-subtle text-danger px-3 py-1.5 rounded-pill"><i class="bi bi-exclamation-circle me-1"></i> Unpaid</span>
+                        {% endif %}
+                    </li>
                 </ul>
             </div>
         </div>
     </div>
-    <div class="col-md-8 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="fw-semibold mb-3"><i class="bi bi-currency-dollar text-primary"></i> Payment Summary</h5>
-                <div class="d-flex justify-content-between mb-2"><span>Total Amount:</span><strong>{{ invoice.total_amount }}</strong></div>
-                <div class="d-flex justify-content-between mb-2"><span>Total Paid:</span><strong class="text-success">{{ invoice.amount_paid }}</strong></div>
-                <div class="d-flex justify-content-between mb-2"><span>Balance Due:</span><strong class="text-danger">{{ invoice.balance_due }}</strong></div>
-                <hr>
-                <div class="progress mb-2" style="height: 20px;">
-                    <div class="progress-bar bg-success progress-bar-invoice" role="progressbar">{{ invoice.paid_percentage|floatformat:1|default_if_none:'0' }}%</div>
+
+    <!-- Financial Breakdown Card -->
+    <div class="col-md-7 col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+                <h5 class="font-weight-bold text-slate-800 border-bottom pb-3 mb-3">
+                    <i class="bi bi-calculator text-success me-2"></i>Financial Ledger
+                </h5>
+                <div class="row text-center mb-4">
+                    <div class="col-4 border-end">
+                        <small class="text-muted text-uppercase fw-semibold fs-8">Total Amount</small>
+                        <h3 class="font-weight-bold text-dark mb-0 mt-1">Rs. {{ invoice.total_amount }}</h3>
+                    </div>
+                    <div class="col-4 border-end">
+                        <small class="text-muted text-uppercase fw-semibold fs-8">Amount Paid</small>
+                        <h3 class="font-weight-bold text-success mb-0 mt-1">Rs. {{ invoice.amount_paid }}</h3>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted text-uppercase fw-semibold fs-8">Balance Due</small>
+                        <h3 class="font-weight-bold text-danger mb-0 mt-1">Rs. {{ invoice.balance_due }}</h3>
+                    </div>
+                </div>
+
+                <label class="form-label font-weight-semibold text-slate-700 mb-1">Payment Completion Rate ({{ invoice.paid_percentage|floatformat:1|default_if_none:'0' }}%)</label>
+                <div class="progress rounded-pill bg-light mb-3" style="height: 18px;">
+                    <div class="progress-bar bg-success rounded-pill font-weight-bold" role="progressbar" style="width: {{ invoice.paid_percentage|floatformat:1|default_if_none:'0' }}%;" aria-valuenow="{{ invoice.paid_percentage|default:'0' }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ invoice.paid_percentage|floatformat:0|default_if_none:'0' }}%
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-<div class="card">
-    <div class="card-header bg-white"><h5 class="mb-0 fw-semibold"><i class="bi bi-clock-history text-primary"></i> Payment History</h5></div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table data-table table-hover mb-0">
-                <thead><tr><th>Payment #</th><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th><th>Collected By</th><th>Date</th></tr></thead>
-                <tbody>{% for p in payments %}<tr><td>#{{ p.pk }}</td><td>{{ p.amount }}</td><td>{{ p.get_payment_method_display }}</td><td>{{ p.reference_number|default:"—" }}</td><td><span class="badge bg-light text-dark">{{ p.get_payment_method_display }}</span></td><td>{{ p.collected_by|default:"—" }}</td><td>{{ p.payment_date }}</td></tr>{% empty %}<tr><td colspan="7" class="text-center py-4 text-muted">No payments recorded yet.</td></tr>{% endfor %}</tbody>
-            </table>
+
+        <!-- Payment History Table Card -->
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="font-weight-bold text-slate-800 m-0"><i class="bi bi-clock-history text-secondary me-2"></i>Payment History Transactions</h5>
+                <span class="badge bg-light text-dark border">{{ payments|length }} Payment{% if payments|length != 1 %}s{% endif %}</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light border-bottom text-muted fs-7 text-uppercase fw-semibold">
+                            <tr>
+                                <th class="ps-4">Receipt #</th>
+                                <th>Amount Paid</th>
+                                <th>Method</th>
+                                <th>Reference / Txn ID</th>
+                                <th>Collected By</th>
+                                <th class="pe-4 text-end">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y fs-6">
+                            {% for p in payments %}
+                            <tr>
+                                <td class="ps-4 font-monospace fw-bold text-primary">#{{ p.pk }}</td>
+                                <td class="fw-bold text-success">Rs. {{ p.amount }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ p.get_payment_method_display }}</span></td>
+                                <td>{{ p.reference_number|default:"—" }}</td>
+                                <td class="text-secondary">{{ p.collected_by.get_full_name|default:p.collected_by.email|default:"System" }}</td>
+                                <td class="pe-4 text-end text-muted fs-7">{{ p.payment_date|date:"M d, Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="bi bi-receipt-cutoff text-secondary display-6 d-block mb-2"></i>
+                                    No payments recorded yet for this invoice.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>

@@ -118,8 +118,12 @@ class AssignmentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return context
 
     def form_valid(self, form):
+        if not form.cleaned_data.get('teacher'):
+            teacher = getattr(self.request.user, 'teacher_profile', None)
+            if teacher:
+                form.instance.teacher = teacher
         response = super().form_valid(form)
-        messages.success(self.request, 'Assignment created.')
+        messages.success(self.request, 'Assignment created successfully.')
         return response
 
 
@@ -173,7 +177,7 @@ class GradeSubmissionView(LoginRequiredMixin, UserPassesTestMixin, FormView):
         submission = get_object_or_404(Submission, pk=self.kwargs.get('pk'))
         submission.marks_obtained = form.cleaned_data['marks_obtained']
         submission.teacher_remarks = form.cleaned_data['teacher_remarks']
-        submission.graded_by = self.request.user.teacher_profile
+        submission.graded_by = getattr(self.request.user, 'teacher_profile', None)
         submission.graded_at = timezone.now()
         submission.status = Submission.Status.GRADED
         submission.save()

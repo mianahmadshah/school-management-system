@@ -8,12 +8,20 @@ class AcademicSessionForm(forms.ModelForm):
         model = AcademicSession
         fields = ['name', 'start_date', 'end_date', 'is_current', 'is_active']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 2026-2027'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 2027-2028'}),
             'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'is_current': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+        if start_date and end_date and end_date <= start_date:
+            raise forms.ValidationError("End date must be after start date.")
+        return cleaned_data
 
 
 
