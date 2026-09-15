@@ -167,24 +167,68 @@ class FeeInvoiceListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return redirect('unauthorized')
 
     def get_queryset(self):
-        qs = FeeInvoice.objects.select_related('student__user')
+        qs = FeeInvoice.objects.select_related('student__user', 'student__current_class', 'academic_session').prefetch_related('items')
         user = self.request.user
         if user.is_student:
             student = getattr(user, 'student_profile', None)
             if student:
                 qs = qs.filter(student=student)
+        
+        # Student filter
         student_id = self.request.GET.get('student_id', '')
         if student_id:
             qs = qs.filter(student_id=student_id)
+            
+        # Class filter
+        class_id = self.request.GET.get('class_id', '')
+        if class_id:
+            qs = qs.filter(student__current_class_id=class_id)
+            
+        # Status filter
         status = self.request.GET.get('status', '')
         if status:
             qs = qs.filter(status=status)
-        return qs
+            
+        # Search query (student name or admission number)
+        q = self.request.GET.get('q', '').strip()
+        if q:
+            qs = qs.filter(
+                Q(student__user__first_name__icontains=q) |
+                Q(student__user__last_name__icontains=q) |
+                Q(student__admission_number__icontains=q) |
+                Q(invoice_number__icontains=q)
+            )
+        return qs.order_by('-issue_date', '-id')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.request.user.role != User.Role.STUDENT:
-            context['students'] = Student.objects.filter(status='ACTIVE').select_related('user')
+        user = self.request.user
+        
+        # Calculate totals for the current filtered queryset (without pagination)
+        filtered_qs = self.get_queryset()
+        totals = filtered_qs.aggregate(
+            total_invoiced=Sum('total_amount'),
+            total_collected=Sum('amount_paid'),
+        )
+        total_invoiced = totals['total_invoiced'] or 0
+        total_collected = totals['total_collected'] or 0
+        balance_due = max(0, total_invoiced - total_collected)
+        
+        context['kpi_total_invoiced'] = total_invoiced
+        context['kpi_total_collected'] = total_collected
+        context['kpi_balance_due'] = balance_due
+        context['kpi_unpaid_count'] = filtered_qs.filter(status__in=['UNPAID', 'PARTIAL']).count()
+        context['kpi_paid_count'] = filtered_qs.filter(status='PAID').count()
+        
+        if user.role != User.Role.STUDENT:
+            context['students'] = Student.objects.filter(status='ACTIVE').select_related('user').order_by('user__first_name')
+            context['classes'] = Class.objects.filter(is_active=True).order_by('name')
+        
+        # Preserve query string for pagination
+        query_params = self.request.GET.copy()
+        if 'page' in query_params:
+            query_params.pop('page')
+        context['query_params'] = query_params.urlencode()
         return context
 
 
@@ -261,9 +305,7 @@ class RecordPaymentView(LoginRequiredMixin, UserPassesTestMixin, FormView):
         payment.save()
 
         # Recalculate invoice amount_paid and update status
-        total_collected = sum(p.amount for p in invoice.payments.all())
-        invoice.amount_paid = total_collected
-        invoice.update_status()
+        invoice.update_totals()
 
         messages.success(self.request, f'Payment of Rs. {payment.amount} recorded for invoice {invoice.invoice_number}.')
         return redirect('invoice_detail', pk=invoice.pk)
@@ -313,28 +355,141 @@ class GenerateClassInvoicesView(LoginRequiredMixin, UserPassesTestMixin, Templat
             is_active=True
         ).select_related('student')
 
+        from .models import FeeInvoiceItem
         generated_count = 0
         for enr in enrollments:
             rand_num = random.randint(1000, 9999)
             inv_no = f"INV-{school_class.name.replace(' ', '')}-{timezone.now().strftime('%Y%m%d')}-{rand_num}"
             
-            FeeInvoice.objects.create(
+            # Calculate Arrears
+            arrears = 0
+            unpaid_invoices = FeeInvoice.objects.filter(student=enr.student, status__in=['UNPAID', 'PARTIAL'])
+            for upi in unpaid_invoices:
+                arrears += upi.balance_due
+            
+            invoice = FeeInvoice.objects.create(
                 student=enr.student,
                 academic_session=session,
                 academic_year=session.name,
                 invoice_number=inv_no,
                 due_date=due_date or (timezone.now() + timezone.timedelta(days=15)).date(),
-                total_amount=amount,
+                total_amount=0,
                 amount_paid=0,
                 status='UNPAID',
                 remarks=f"Monthly Fee ({category.name if category else 'Tuition Fee'}) - {session.name}"
             )
+            
+            # Main Fee Item
+            FeeInvoiceItem.objects.create(
+                invoice=invoice,
+                fee_category=category,
+                description=f"Monthly Fee ({category.name if category else 'Tuition Fee'})",
+                amount=amount
+            )
+            
+            # Arrears Item
+            if arrears > 0:
+                FeeInvoiceItem.objects.create(
+                    invoice=invoice,
+                    fee_category=None,
+                    description="Previous Arrears (Carried Forward)",
+                    amount=arrears
+                )
+                
+            invoice.update_totals()
             generated_count += 1
 
         messages.success(request, f"Successfully generated {generated_count} fee invoices for {school_class.name} ({session.name}).")
         return redirect('invoice_list')
 
 
+from django.views.generic import View
+
+class VoidPaymentView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """
+    Voids an existing payment and recalculates the invoice.
+    """
+    def test_func(self):
+        return self.request.user.role == User.Role.ADMIN
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+
+    def post(self, request, *args, **kwargs):
+        payment = get_object_or_404(FeePayment, pk=self.kwargs.get('pk'))
+        if not payment.is_void:
+            payment.is_void = True
+            payment.void_reason = request.POST.get('void_reason', 'Voided by admin')
+            payment.voided_at = timezone.now()
+            payment.save()
+            
+            # Recalculate invoice
+            payment.invoice.update_totals()
+            messages.success(request, f"Payment of Rs. {payment.amount} has been voided.")
+        else:
+            messages.info(request, "This payment is already voided.")
+            
+        return redirect('invoice_detail', pk=payment.invoice.pk)
+
+
+class StudentLedgerView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    """
+    Shows a chronological ledger (Debits vs Credits) for a specific student.
+    """
+    model = Student
+    template_name = 'fees/student_ledger.html'
+    context_object_name = 'student'
+
+    def test_func(self):
+        user = self.request.user
+        if user.role == User.Role.ADMIN:
+            return True
+        if user.is_student:
+            return getattr(user, 'student_profile', None) == self.get_object()
+        return False
+
+    def handle_no_permission(self):
+        return redirect('unauthorized')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        student = self.object
+        
+        invoices = FeeInvoice.objects.filter(student=student)
+        payments = FeePayment.objects.filter(invoice__student=student, is_void=False)
+        
+        ledger_entries = []
+        for inv in invoices:
+            ledger_entries.append({
+                'date': inv.issue_date,
+                'description': f"Invoice: {inv.invoice_number}",
+                'debit': inv.total_amount,
+                'credit': 0,
+                'obj': inv,
+                'type': 'invoice'
+            })
+            
+        for pay in payments:
+            ledger_entries.append({
+                'date': pay.payment_date,
+                'description': f"Payment: {pay.payment_method}",
+                'debit': 0,
+                'credit': pay.amount,
+                'obj': pay,
+                'type': 'payment'
+            })
+            
+        # Sort by date, then invoice before payment if same date
+        ledger_entries.sort(key=lambda x: (x['date'], 0 if x['type'] == 'invoice' else 1))
+        
+        balance = 0
+        for entry in ledger_entries:
+            balance += entry['debit'] - entry['credit']
+            entry['balance'] = balance
+            
+        context['ledger_entries'] = ledger_entries
+        context['current_balance'] = balance
+        return context
 
 # ─────────────────────────────────────────────────────────────
 # DRF Viewsets (API)

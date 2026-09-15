@@ -80,7 +80,7 @@ from apps.fees.views import (
     FeeCategoryListView, FeeCategoryCreateView, FeeCategoryUpdateView, FeeCategoryDeleteView,
     FeeStructureListView, FeeStructureCreateView,
     FeeInvoiceListView, FeeInvoiceCreateView, FeeInvoiceDetailView, GenerateClassInvoicesView,
-    RecordPaymentView,
+    RecordPaymentView, VoidPaymentView, StudentLedgerView
 )
 from apps.timetable.views import (
     PeriodListView, PeriodCreateView, PeriodUpdateView, PeriodDeleteView,
@@ -200,6 +200,8 @@ urlpatterns = [
     path('admin/fees/invoices/generate/', GenerateClassInvoicesView.as_view(), name='generate_class_invoices'),
     path('admin/fees/invoices/<int:pk>/', FeeInvoiceDetailView.as_view(), name='invoice_detail'),
     path('admin/fees/invoices/<int:pk>/pay/', RecordPaymentView.as_view(), name='record_payment'),
+    path('admin/fees/payments/<int:pk>/void/', VoidPaymentView.as_view(), name='void_payment'),
+    path('student/<int:pk>/ledger/', StudentLedgerView.as_view(), name='student_ledger'),
 
     # Timetable Management
     path('admin/timetable/', TimetableListView.as_view(), name='timetable_list'),

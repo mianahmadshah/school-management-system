@@ -305,6 +305,14 @@ class StudentDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
             # Pending assignments count
             context['pending_assignments'] = Assignment.objects.filter(school_class=student.current_class, is_active=True).count()
             
+            # Monthly Fee summary for Student
+            from apps.fees.models import FeeInvoice
+            student_invoices = FeeInvoice.objects.filter(student=student)
+            total_inv = sum(i.total_amount for i in student_invoices)
+            total_paid = sum(i.amount_paid for i in student_invoices)
+            context['student_fee_balance'] = max(0, total_inv - total_paid)
+            context['student_unpaid_invoices_count'] = student_invoices.filter(status__in=['UNPAID', 'PARTIAL']).count()
+            
             # Average grade
             student_results = Result.objects.filter(student=student)
             if student_results.exists():

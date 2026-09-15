@@ -99,3 +99,45 @@ class StudentAdmissionForm(forms.ModelForm):
         if current:
             self.fields['academic_session'].initial = current
 
+        # Auto-generate a default unique admission number if this is a new form
+        if not self.instance.pk and not self.initial.get('admission_number'):
+            import random
+            from django.utils import timezone
+            year = timezone.now().year
+            rand_code = random.randint(1000, 9999)
+            self.fields['admission_number'].initial = f"ADM{year}-{rand_code}"
+            
+        # Ensure admission_number is not strictly required by user input (auto-fill if blank)
+        self.fields['admission_number'].required = False
+
+    def clean_admission_number(self):
+        admission_number = self.cleaned_data.get('admission_number')
+        if not admission_number:
+            import random
+            from django.utils import timezone
+            year = timezone.now().year
+            rand_code = random.randint(1000, 9999)
+            admission_number = f"ADM{year}-{rand_code}"
+            
+        # Check uniqueness
+        qs = StudentAdmission.objects.filter(admission_number=admission_number)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            import random
+            from django.utils import timezone
+            year = timezone.now().year
+            rand_code = random.randint(10000, 99999)
+            admission_number = f"ADM{year}-{rand_code}"
+        return admission_number
+
+    def clean_amount_paid(self):
+        amount_paid = self.cleaned_data.get('amount_paid')
+        admission_fee = self.cleaned_data.get('admission_fee')
+        if amount_paid is not None and admission_fee is not None:
+            if amount_paid > admission_fee:
+                raise forms.ValidationError("Amount paid cannot exceed the total admission fee charged.")
+            if amount_paid < 0:
+                raise forms.ValidationError("Amount paid cannot be negative.")
+        return amount_paid
+

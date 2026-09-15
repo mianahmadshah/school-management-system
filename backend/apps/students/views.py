@@ -117,6 +117,19 @@ class StudentDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     def handle_no_permission(self):
         return redirect('unauthorized')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        student = self.object
+        from apps.fees.models import FeeInvoice
+        invoices = FeeInvoice.objects.filter(student=student).order_by('-issue_date')
+        total_invoiced = sum(inv.total_amount for inv in invoices)
+        total_paid = sum(inv.amount_paid for inv in invoices)
+        context['fee_invoices'] = invoices
+        context['fee_total_invoiced'] = total_invoiced
+        context['fee_total_paid'] = total_paid
+        context['fee_balance_due'] = max(0, total_invoiced - total_paid)
+        return context
+
 
 class StudentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     """

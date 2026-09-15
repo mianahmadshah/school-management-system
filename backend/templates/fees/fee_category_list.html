@@ -3,8 +3,35 @@
 {% block title %}Fee Categories - EduCore SMS{% endblock %}
 {% block page_title %}Fee Categories{% endblock %}
 {% block content %}
+<!-- Module Navigation Tabs -->
+<ul class="nav nav-pills mb-4 bg-white p-2 rounded-3 shadow-sm border">
+    <li class="nav-item">
+        <a class="nav-link text-secondary fw-semibold" href="{% url 'invoice_list' %}">
+            <i class="bi bi-receipt me-1"></i> Monthly Fees & Invoices
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-secondary fw-semibold" href="{% url 'fee_structure_list' %}">
+            <i class="bi bi-diagram-3 me-1"></i> Fee Structures
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link active fw-semibold" href="{% url 'fee_category_list' %}">
+            <i class="bi bi-tags me-1"></i> Fee Categories
+        </a>
+    </li>
+    <li class="nav-item ms-auto">
+        <a class="nav-link text-primary fw-semibold" href="{% url 'generate_class_invoices' %}">
+            <i class="bi bi-gear-wide-connected me-1"></i> Bulk Generator
+        </a>
+    </li>
+</ul>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <div><p class="text-muted mb-0">Configure fee categories</p></div>
+    <div>
+        <h4 class="m-0 font-weight-bold text-dark">Fee Categories</h4>
+        <small class="text-muted">Manage fee types (e.g. Tuition Fee, Transport, Examination Fee).</small>
+    </div>
     <a href="{% url 'fee_category_create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add Category</a>
 </div>
 <div class="card">

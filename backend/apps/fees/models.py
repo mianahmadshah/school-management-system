@@ -168,15 +168,68 @@ class FeeInvoice(models.Model):
             return 0
         return (self.amount_paid / self.total_amount) * 100
 
-    def update_status(self):
-        """Update invoice status based on amount paid."""
-        if self.amount_paid >= self.total_amount:
-            self.status = self.Status.PAID
-        elif self.amount_paid > 0:
-            self.status = self.Status.PARTIAL
+    def update_totals(self):
+        """Recalculate total_amount from items and amount_paid from valid payments."""
+        from django.db.models import Sum
+        
+        # Calculate total from items
+        items_total = self.items.aggregate(total=Sum('amount'))['total'] or 0
+        if self.items.exists():
+            self.total_amount = items_total
+            
+        # Calculate paid from non-void payments
+        payments_total = self.payments.filter(is_void=False).aggregate(total=Sum('amount'))['total'] or 0
+        self.amount_paid = payments_total
+        
+        # Update status
+        if self.total_amount > 0:
+            if self.amount_paid >= self.total_amount:
+                self.status = self.Status.PAID
+            elif self.amount_paid > 0:
+                self.status = self.Status.PARTIAL
+            else:
+                self.status = self.Status.UNPAID
         else:
-            self.status = self.Status.UNPAID
+            self.status = self.Status.PAID
+            
         self.save()
+
+
+class FeeInvoiceItem(models.Model):
+    """
+    Line item for a Fee Invoice (e.g. Tuition, Transport, Arrears).
+    """
+    invoice = models.ForeignKey(
+        FeeInvoice,
+        on_delete=models.CASCADE,
+        related_name='items'
+    )
+    fee_category = models.ForeignKey(
+        FeeCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Optional link to a formal fee category"
+    )
+    description = models.CharField(
+        max_length=100,
+        help_text='e.g., "September Tuition", "Arrears", "Sibling Discount"'
+    )
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Can be negative for discounts"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'fee_invoice_items'
+        verbose_name = 'Fee Invoice Item'
+        verbose_name_plural = 'Fee Invoice Items'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.description} - {self.amount}"
 
 
 class FeePayment(models.Model):
@@ -219,6 +272,21 @@ class FeePayment(models.Model):
         null=True,
         help_text="Admin who processed the payment."
     )
+    
+    is_void = models.BooleanField(
+        default=False,
+        help_text="If True, this payment was canceled/voided."
+    )
+    voided_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+    void_reason = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True
+    )
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -9,7 +9,7 @@ from .views import (
     FeeCategoryListView, FeeCategoryCreateView, FeeCategoryUpdateView, FeeCategoryDeleteView,
     FeeStructureListView, FeeStructureCreateView,
     FeeInvoiceListView, FeeInvoiceCreateView, FeeInvoiceDetailView,
-    RecordPaymentView,
+    RecordPaymentView, VoidPaymentView, StudentLedgerView
 )
 
 router = DefaultRouter()
@@ -34,6 +34,10 @@ urlpatterns = [
     path('invoices/add/', FeeInvoiceCreateView.as_view(), name='invoice_create'),
     path('invoices/<int:pk>/', FeeInvoiceDetailView.as_view(), name='invoice_detail'),
     path('invoices/<int:pk>/pay/', RecordPaymentView.as_view(), name='record_payment'),
+    path('payments/<int:pk>/void/', VoidPaymentView.as_view(), name='void_payment'),
+    
+    # Ledger
+    path('ledger/<int:pk>/', StudentLedgerView.as_view(), name='student_ledger'),
 ]
 
 api_urlpatterns = [

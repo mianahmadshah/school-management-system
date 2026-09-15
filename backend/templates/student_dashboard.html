@@ -61,13 +61,17 @@
     <div class="col-12 col-sm-6 col-lg-3">
         <div class="stats-card animate-fade-in-up delay-4">
             <div class="stats-card-header">
-                <div class="stats-card-icon info"><i class="bi bi-bell-fill"></i></div>
-                <span class="badge bg-info-soft text-info font-weight-medium">Notices</span>
+                <div class="stats-card-icon {% if student_fee_balance > 0 %}danger{% else %}success{% endif %}">
+                    <i class="bi {% if student_fee_balance > 0 %}bi-exclamation-octagon-fill{% else %}bi-check-circle-fill{% endif %}"></i>
+                </div>
+                <span class="badge {% if student_fee_balance > 0 %}bg-danger-soft text-danger{% else %}bg-success-soft text-success{% endif %} font-weight-medium">
+                    {% if student_fee_balance > 0 %}{{ student_unpaid_invoices_count }} Due{% else %}Cleared{% endif %}
+                </span>
             </div>
-            <div class="stats-card-label">New Notices</div>
-            <h3 class="stats-card-value">{{ new_announcements|default:"0" }}</h3>
+            <div class="stats-card-label">Fee Balance</div>
+            <h3 class="stats-card-value text-{% if student_fee_balance > 0 %}danger{% else %}success{% endif %}">Rs. {{ student_fee_balance|default:"0" }}</h3>
             <div class="stats-card-footer">
-                <a href="{% url 'announcement_list' %}" class="text-info text-decoration-none small">Announcements →</a>
+                <a href="{% url 'invoice_list' %}" class="text-{% if student_fee_balance > 0 %}danger{% else %}success{% endif %} text-decoration-none small">My Fees & Invoices →</a>
             </div>
         </div>
     </div>

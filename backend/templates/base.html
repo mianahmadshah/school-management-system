@@ -98,7 +98,7 @@
                         </a>
                     </li>
                     <li class="sidebar-nav-item">
-                        <a class="sidebar-nav-link {% if 'fee' in request.path %}active{% endif %}" href="{% url 'fee_category_list' %}" aria-current="{% if 'fee' in request.path %}page{% endif %}">
+                        <a class="sidebar-nav-link {% if 'fee' in request.path %}active{% endif %}" href="{% url 'invoice_list' %}" aria-current="{% if 'fee' in request.path %}page{% endif %}">
                             <i class="bi bi-credit-card"></i> <span>Fee Management</span>
                         </a>
                     </li>
@@ -172,6 +172,11 @@
                     <li class="sidebar-nav-item">
                         <a class="sidebar-nav-link {% if 'timetable' in request.path %}active{% endif %}" href="{% url 'my_timetable' %}">
                             <i class="bi bi-calendar3"></i> <span>My Timetable</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a class="sidebar-nav-link {% if 'invoice' in request.path or 'fee' in request.path or 'ledger' in request.path %}active{% endif %}" href="{% url 'invoice_list' %}">
+                            <i class="bi bi-credit-card-2-front"></i> <span>My Monthly Fees</span>
                         </a>
                     </li>
                     <li class="sidebar-nav-item">

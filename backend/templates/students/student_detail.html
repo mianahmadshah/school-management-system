@@ -27,9 +27,17 @@
                 <h4 class="fw-bold text-dark mb-1">{{ student.full_name }}</h4>
                 <p class="text-muted text-sm mb-3">Admission No: <span class="fw-bold">{{ student.admission_number }}</span></p>
                 
-                <span class="badge {% if student.status == 'ACTIVE' %}badge-success-subtle{% else %}badge-danger-subtle{% endif %} px-3 py-2 rounded-pill fw-semibold mb-4" style="font-size: 0.8rem;">
+                <span class="badge {% if student.status == 'ACTIVE' %}badge-success-subtle{% else %}badge-danger-subtle{% endif %} px-3 py-2 rounded-pill fw-semibold mb-3" style="font-size: 0.8rem;">
                     {{ student.status }}
                 </span>
+
+                {% if user.role == 'ADMIN' or user.is_student %}
+                <div class="mb-4">
+                    <a href="{% url 'student_ledger' student.pk %}" class="btn btn-outline-primary btn-sm w-100 fw-bold">
+                        <i class="bi bi-journal-text me-1"></i> View Financial Ledger
+                    </a>
+                </div>
+                {% endif %}
 
                 <div class="w-100 border-top pt-3 text-start">
                     <div class="mb-2">
@@ -69,6 +77,14 @@
                     </li>
                     <li class="nav-item">
                         <button class="nav-link fw-semibold text-secondary" id="medical-tab" data-bs-toggle="tab" data-bs-target="#medical" type="button" role="tab" aria-controls="medical" aria-selected="false">Medical Info</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link fw-semibold text-secondary" id="fees-tab" data-bs-toggle="tab" data-bs-target="#fees" type="button" role="tab" aria-controls="fees" aria-selected="false">
+                            <i class="bi bi-receipt me-1"></i> Fees & Invoices
+                            {% if fee_balance_due > 0 %}
+                                <span class="badge bg-danger ms-1">Due</span>
+                            {% endif %}
+                        </button>
                     </li>
                 </ul>
             </div>
@@ -176,6 +192,87 @@
                                 {{ student.medical_conditions|default:"No medical conditions reported." }}
                             </p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Fees & Invoices -->
+                <div class="tab-pane fade" id="fees" role="tabpanel" aria-labelledby="fees-tab">
+                    <!-- Fee Mini KPI Cards -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border text-center">
+                                <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.75rem;">Total Invoiced</small>
+                                <h5 class="fw-bold text-dark mb-0 mt-1">Rs. {{ fee_total_invoiced }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border text-center">
+                                <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.75rem;">Total Paid</small>
+                                <h5 class="fw-bold text-success mb-0 mt-1">Rs. {{ fee_total_paid }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border text-center">
+                                <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.75rem;">Current Balance</small>
+                                <h5 class="fw-bold text-{% if fee_balance_due > 0 %}danger{% else %}success{% endif %} mb-0 mt-1">Rs. {{ fee_balance_due }}</h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Invoices Table -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold text-dark m-0">Monthly Invoices & Charges</h6>
+                        <a href="{% url 'student_ledger' student.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-journal-text me-1"></i> Full Financial Ledger
+                        </a>
+                    </div>
+
+                    <div class="table-responsive border rounded-3">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted" style="font-size: 0.8rem;">
+                                <tr>
+                                    <th class="ps-3">Invoice #</th>
+                                    <th>Issue Date</th>
+                                    <th>Total (Rs.)</th>
+                                    <th>Paid (Rs.)</th>
+                                    <th>Balance (Rs.)</th>
+                                    <th>Status</th>
+                                    <th class="text-end pe-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody style="font-size: 0.875rem;">
+                                {% for inv in fee_invoices %}
+                                <tr>
+                                    <td class="ps-3 fw-bold text-primary">{{ inv.invoice_number }}</td>
+                                    <td class="text-muted">{{ inv.issue_date|date:"M d, Y" }}</td>
+                                    <td class="fw-semibold">Rs. {{ inv.total_amount }}</td>
+                                    <td class="text-success fw-semibold">Rs. {{ inv.amount_paid }}</td>
+                                    <td class="text-danger fw-semibold">Rs. {{ inv.balance_due }}</td>
+                                    <td>
+                                        {% if inv.status == 'PAID' %}
+                                            <span class="badge bg-success-subtle text-success">Paid</span>
+                                        {% elif inv.status == 'PARTIAL' %}
+                                            <span class="badge bg-info-subtle text-info">Partial</span>
+                                        {% else %}
+                                            <span class="badge bg-danger-subtle text-danger">Unpaid</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <a href="{% url 'invoice_detail' inv.pk %}" class="btn btn-sm btn-light border py-0 px-2" title="View Details">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">
+                                        <i class="bi bi-receipt text-secondary display-6 d-block mb-2"></i>
+                                        No fee invoices recorded for this student.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Financial Ledger - {{ student.full_name }}{% endblock %}
+{% block page_title %}Student Financial Ledger{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center">
+        <a href="{% url 'student_detail' student.pk %}" class="btn btn-sm btn-light border rounded-circle me-3 p-2">
+            <i class="bi bi-arrow-left fs-6"></i>
+        </a>
+        <div>
+            <h1 class="h3 font-weight-bold text-slate-800 mb-0">Financial Ledger</h1>
+            <p class="text-muted fs-7 mb-0">{{ student.full_name }} (Admission #: {{ student.admission_number }}) - Class: {{ student.current_class.name|default:"-" }}</p>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <button onclick="window.print()" class="btn btn-outline-secondary shadow-sm">
+            <i class="bi bi-printer me-1"></i> Print Ledger
+        </button>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12">
+        <!-- Summary Card -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4 bg-primary text-white overflow-hidden position-relative">
+            <div class="position-absolute end-0 top-0 opacity-10" style="font-size: 8rem; line-height: 1; transform: translate(10%, -20%);">
+                <i class="bi bi-bank"></i>
+            </div>
+            <div class="card-body p-4 position-relative z-1">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h4 class="fw-bold mb-1">Current Outstanding Balance</h4>
+                        <p class="mb-0 text-white-50">Total remaining amount to be paid as of today.</p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <h1 class="display-5 fw-bold mb-0 text-white">Rs. {{ current_balance }}</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ledger Table -->
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="font-weight-bold text-slate-800 m-0"><i class="bi bi-journal-text text-secondary me-2"></i>Running Ledger (Chronological)</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light border-bottom text-muted fs-7 text-uppercase fw-semibold">
+                            <tr>
+                                <th class="ps-4">Date</th>
+                                <th>Description</th>
+                                <th class="text-end text-danger">Debit (Charge)</th>
+                                <th class="text-end text-success">Credit (Paid)</th>
+                                <th class="text-end pe-4 text-primary">Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y fs-6">
+                            {% for entry in ledger_entries %}
+                            <tr>
+                                <td class="ps-4 text-muted fs-7">{{ entry.date|date:"d M, Y" }}</td>
+                                <td class="fw-semibold">
+                                    {% if entry.type == 'invoice' %}
+                                        <a href="{% url 'invoice_detail' entry.obj.pk %}" class="text-decoration-none">
+                                            <i class="bi bi-receipt me-1"></i> {{ entry.description }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-success"><i class="bi bi-cash me-1"></i> {{ entry.description }} (Receipt #{{ entry.obj.pk }})</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end font-monospace text-danger">{% if entry.debit %}Rs. {{ entry.debit }}{% else %}-{% endif %}</td>
+                                <td class="text-end font-monospace text-success">{% if entry.credit %}Rs. {{ entry.credit }}{% else %}-{% endif %}</td>
+                                <td class="text-end pe-4 font-monospace fw-bold text-primary">Rs. {{ entry.balance }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inboxes text-secondary display-6 d-block mb-2"></i>
+                                    No financial transactions recorded yet.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            
+                            {% if ledger_entries %}
+                            <tr class="bg-light">
+                                <td colspan="4" class="text-end fw-bold text-slate-800">Final Balance:</td>
+                                <td class="text-end pe-4 fw-bold font-monospace text-slate-800 border-start">Rs. {{ current_balance }}</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
